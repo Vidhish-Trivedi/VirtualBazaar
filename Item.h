@@ -7,16 +7,16 @@
 # include <stdio.h>
 
 // Struct for product.
-struct Product{
+typedef struct Product{
     int id;
     char name[100];
     int price;
     int quantity;
-};
+} Product;
 
 // Struct for order.
-struct Order{
+typedef struct Order{
     int order_id;
     int customer_id;
     struct Product cart[25];
-};
+} Order;
