@@ -13,7 +13,7 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <arpa/inet.h>
-// #include "Item.h"
+
 #include "Order.h"
 
 typedef struct Query
@@ -21,7 +21,6 @@ typedef struct Query
 	int query_num;
 	int user_type;
 	Product product;
-	Order order;
 } Query;
 
 // Customer --> User
@@ -44,7 +43,7 @@ typedef struct Admin
 } Admin;
 
 // Customer actions.
-Product* getAllProducts();
+Product* getAllProducts(Product p_arr[]);
 Product getProductById(int product_id);
 Cart getCartByCustomer(int customer_id);
 bool addProductToCart(int product_id, int customer_id, int quantity);

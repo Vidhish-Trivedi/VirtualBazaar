@@ -10,165 +10,54 @@
 // Prepare a response
 // Send the reponse to client
 
-bool alterPassword(int user_type, int ID, char newpass[10])
-{
-	int i = ID - 1000;
-	int fd;
-	int fl1;
-	bool result;
-	struct flock lock;
-	switch (user_type)
-	{
-	case 1: // customer
-		fd = open("Customer_User", O_RDWR, 0744);
-
-		lock.l_type = F_WRLCK;
-		lock.l_whence = SEEK_SET;
-		lock.l_start = (i) * sizeof(Customer);
-		lock.l_len = sizeof(Customer);
-		lock.l_pid = getpid();
-
-		fl1 = fcntl(fd, F_SETLKW, &lock);
-
-		Customer n;
-		lseek(fd, (i) * sizeof(Customer), SEEK_SET);
-		read(fd, &n, sizeof(Customer));
-
-		if (!strcmp(n.details, "ACTIVE"))
-		{
-			strcpy(n.password, newpass);
-			lseek(fd, sizeof(Customer) * (-1), SEEK_CUR);
-			write(fd, &n, sizeof(Customer));
-			result = true;
-		}
-		else
-			result = false;
-		lock.l_type = F_UNLCK;
-		fcntl(fd, F_SETLK, &lock);
-
-		close(fd);
-		return result;
-		break;
-	default:
-		break;
-	}
-
-	return false;
-}
-
 void server(int nsd)
 {
-	int msgLength, select, type, option, accType, currUserID;
+	int msgLength, select, type, option, currUserID;
 	bool result;
 	Query q;
-
-	while (1)
-	{
-		read(nsd, &option, sizeof(option));
-		printf("Option : %d\n", option);
-
-		if (option == 1)
-		{
-			Customer currUser1;
-			accType = 1;
-			msgLength = read(nsd, &currUser1, sizeof(Customer));
-			printf("Username : %d\n", currUser1.id);
-			printf("Password : %s\n", currUser1.password);
-			currUserID = currUser1.id;
-			result = checkCustomer(currUser1);
-			write(nsd, &result, sizeof(result));
-		}
-		else if (option == 2)
-		{
-			Admin currUser3;
-			accType = 3;
-			msgLength = read(nsd, &currUser3, sizeof(Admin));
-			currUserID = currUser3.id;
-			printf("Username : %d\n", currUser3.id);
-			printf("Password : %s\n", currUser3.password);
-			result = checkAdmin(currUser3);
-			write(nsd, &result, sizeof(result));
-		}
-		else
-		{
-			result = false;
-			write(nsd, &result, sizeof(result));
-		}
-		if (result)
-			break;
-	}
 
 	// Handling requests.
 	while (1)
 	{
-		read(nsd, &q, sizeof(Query));
+		read(nsd, &type, sizeof(type));
+		// printf("userType : %d\n", type);
 
-		if (option == 1 || option == 2)
+		if (type == 1)
 		{
-			// if (q.query_num == 1)
-			// {
-			// 	float amt = q.money;
-
-			// 	result = depositMoney(accType, currUserID, amt);
-			// 	write(nsd, &result, sizeof(result));
-			// }
-			// else if (q.query_num == 2)
-			// {
-			// 	float amt = q.money;
-
-			// 	result = withdrawMoney(accType, currUserID, amt);
-			// 	write(nsd, &result, sizeof(result));
-			// }
-			// else if (q.query_num == 3)
-			// {
-			// 	float amt;
-
-			// 	amt = getBalance(accType, currUserID);
-			// 	write(nsd, &amt, sizeof(float));
-			// }
-			if (q.query_num == 4)
+			read(nsd, &q, sizeof(Query));
+			if (q.query_num == 1)
 			{
-				char pwd[10];
-				read(nsd, pwd, sizeof(pwd));
-				result = alterPassword(accType, currUserID, pwd);
-				write(nsd, &result, sizeof(result));
+				Product* p_arr = malloc(sizeof(Product)*30);
+				printf("ok1\n");
+				p_arr = getAllProducts(p_arr);
+				printf("ok2\n");
+				write(nsd, p_arr, sizeof(Product)*30);
 			}
-			else if (q.query_num == 5)
-				break;
 		}
-		else if (option == 3)
+		else if (type == 2)
 		{
+			read(nsd, &q, sizeof(Query));
 
 			if (q.query_num == 1)
 			{
-				read(nsd, &type, sizeof(int));
-				if (type == 1)
-				{
-					Customer newUser1;
-					read(nsd, &newUser1, sizeof(Customer));
-					result = addCustomer(newUser1);
-					write(nsd, &result, sizeof(result));
-				}
+				result = addProduct(q.product);
+				write(nsd, &result, sizeof(result));
+				Product rt;
+				rt = getProductById(q.product.id);
+				printf("\n%d %s\n", rt.id, rt.name);
+				write(nsd, &rt, sizeof(Product));
 			}
 			else if (q.query_num == 2)
 			{
-				read(nsd, &type, sizeof(int));
-				if (type == 1)
-				{
-					int delUserID1;
-					read(nsd, &delUserID1, sizeof(int));
-					result = deleteCustomer(delUserID1);
-					write(nsd, &result, sizeof(result));
-				}
 			}
 			else if (q.query_num == 3)
 			{
 				read(nsd, &type, sizeof(int));
 				if (type == 1)
 				{
-					Customer modUser1;
-					read(nsd, &modUser1, sizeof(Customer));
-					result = modifyCustomer(modUser1);
+					Product p;
+					read(nsd, &p, sizeof(Product));
+					result = deleteProduct(p.id);
 					write(nsd, &result, sizeof(result));
 				}
 			}
@@ -184,8 +73,6 @@ void server(int nsd)
 					write(nsd, &searchUser1, sizeof(Customer));
 				}
 			}
-			else if (q.query_num == 5)
-				break;
 		}
 	}
 	close(nsd);
@@ -201,9 +88,9 @@ void *connection(void *nsd)
 
 Admin getAdmin(int ID)
 {
-	int i = ID - 1000;
+	int i = ID;
 	Admin c;
-	int fd = open("Admin_User", O_RDONLY, 0744);
+	int fd = open("Admin_User", O_RDONLY, 0777);
 
 	int l1;
 	struct flock lock;
@@ -222,40 +109,11 @@ Admin getAdmin(int ID)
 	return c;
 }
 
-bool checkAdmin(Admin c)
-{
-	int i = c.id - 1000;
-	int fd = open("Admin_User", O_RDONLY, 0744);
-	bool res;
-	Admin t;
-
-	int l1;
-	struct flock lock;
-	lock.l_type = F_RDLCK;
-	lock.l_whence = SEEK_SET;
-	lock.l_start = i * sizeof(Admin);
-	lock.l_len = sizeof(Admin);
-	lock.l_pid = getpid();
-	l1 = fcntl(fd, F_SETLKW, &lock);
-	lseek(fd, (i) * sizeof(Admin), SEEK_SET);
-	read(fd, &t, sizeof(Admin));
-	if (!strcmp(t.password, c.password))
-		res = true;
-	else
-		res = false;
-
-	lock.l_type = F_UNLCK;
-	fcntl(fd, F_SETLK, &lock);
-
-	close(fd);
-	return res;
-}
-
 Customer getCustomer(int ID)
 {
 	int i = ID - 1000;
 	Customer c;
-	int fd = open("Customer_User", O_RDONLY, 0744);
+	int fd = open("Customer_User", O_RDONLY, 0777);
 	int l1;
 	struct flock lock;
 
@@ -273,39 +131,9 @@ Customer getCustomer(int ID)
 	return c;
 }
 
-bool checkCustomer(Customer c)
-{
-	int i = c.id - 1000;
-	int fd = open("Customer_User", O_RDONLY, 0744);
-	bool res;
-	Customer t;
-
-	int l1;
-	struct flock lock;
-	lock.l_type = F_RDLCK;
-	lock.l_whence = SEEK_SET;
-	lock.l_start = i * sizeof(Customer);
-	lock.l_len = sizeof(Customer);
-	lock.l_pid = getpid();
-	l1 = fcntl(fd, F_SETLKW, &lock);
-	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
-	read(fd, &t, sizeof(Customer));
-	printf("%s %s\n", t.password, c.password);
-	if (!strcmp(t.password, c.password) && !strcmp(t.details, "ACTIVE"))
-		res = true;
-	else
-		res = false;
-
-	lock.l_type = F_UNLCK;
-	fcntl(fd, F_SETLK, &lock);
-
-	close(fd);
-	return res;
-}
-
 bool addCustomer(Customer u)
 {
-	int fd = open("Customer_User", O_RDWR, 0744);
+	int fd = open("Customer_User", O_RDWR, 0777);
 	bool res;
 
 	int fl1;
@@ -339,74 +167,38 @@ bool addCustomer(Customer u)
 	return res;
 }
 
-// ! TODO: Check this!
-bool modifyCustomer(Customer n)
+bool addProduct(Product p)
 {
-	int i = n.id - 1000;
-	int fd = open("Customer_User", O_RDWR, 0744);
-	bool result = false;
+	int fd = open("Product_List", O_RDWR);
+	lseek(fd, 0, SEEK_SET);
+	bool res;
+	res = false;
 
 	int fl1;
 	struct flock lock;
 	lock.l_type = F_WRLCK;
 	lock.l_whence = SEEK_SET;
-	lock.l_start = (i) * sizeof(Customer);
-	lock.l_len = sizeof(Customer);
-	lock.l_pid = getpid();
-
-	fl1 = fcntl(fd, F_SETLKW, &lock);
-
-	// Read the corresponding customer data entry.
-	Customer t;
-	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
-	read(fd, &t, sizeof(Customer));
-
-	if (!strcmp(t.details, "ACTIVE") && (n.id == t.id))
-	{
-		strcpy(n.details, "ACTIVE");
-		lseek(fd, (-1) * sizeof(Customer), SEEK_CUR);
-		int j = write(fd, &n, sizeof(Customer));
-		if (j != 0)
-			result = true;
-		else
-			result = false;
-	}
-
-	lock.l_type = F_UNLCK;
-	fcntl(fd, F_SETLK, &lock);
-
-	close(fd);
-	return result;
-}
-
-
-bool addProduct(Product p)
-{
-	int fd = open("Product_List", O_RDWR, 0744);
-	bool res;
-
-	int fl1;
-	struct flock lock;
-	lock.l_type = F_WRLCK;
-	lock.l_whence = SEEK_END;
-	lock.l_start = (-1) * sizeof(Product);
-	lock.l_len = sizeof(Product);
+	lock.l_start = 0;
+	lock.l_len = 0;
 	lock.l_pid = getpid();
 
 	fl1 = fcntl(fd, F_SETLKW, &lock);
 
 	// Read the last product data entry.
-	Product t;
-	lseek(fd, (-1) * sizeof(Product), SEEK_END);
-	read(fd, &t, sizeof(Product));
+	lseek(fd, (p.id - 1) * sizeof(Product), SEEK_SET);
+	// read(fd, &t, sizeof(Product));
 
-	p.id = t.id + 1;
+	// p.id = t.id + 1;
 
 	int j = write(fd, &p, sizeof(Product));
-	if (j != 0)
+	printf("j: %d\n", j);
+	if (j != 0){
 		res = true;
-	else
+		perror(" ");
+	}
+	else{
 		res = false;
+	}
 
 	lock.l_type = F_UNLCK;
 	fcntl(fd, F_SETLK, &lock);
@@ -415,50 +207,10 @@ bool addProduct(Product p)
 	return res;
 }
 
-bool deleteCustomer(int ID)
-{
-	int i = ID - 1000;
-	int fd = open("Customer_User", O_RDWR, 0744);
-	bool result;
-
-	int fl1;
-	struct flock lock;
-	lock.l_type = F_WRLCK;
-	lock.l_whence = SEEK_SET;
-	lock.l_start = (i) * sizeof(Customer);
-	lock.l_len = sizeof(Customer);
-	lock.l_pid = getpid();
-
-	fl1 = fcntl(fd, F_SETLKW, &lock);
-	// getchar();
-
-	Customer n;
-	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
-	read(fd, &n, sizeof(Customer));
-
-	if (!strcmp(n.details, "ACTIVE"))
-	{
-		strcpy(n.details, "CLOSED");
-
-		lseek(fd, (-1) * sizeof(Customer), SEEK_CUR);
-		int j = write(fd, &n, sizeof(Customer));
-		if (j != 0)
-			result = true;
-		else
-			result = false;
-	}
-
-	lock.l_type = F_UNLCK;
-	fcntl(fd, F_SETLK, &lock);
-
-	close(fd);
-	return result;
-}
-
 bool deleteProduct(int ID) // Set quantity to negative.
 {
 	int i = ID;
-	int fd = open("Product_List", O_RDWR, 0744);
+	int fd = open("Product_List", O_RDWR, 0777);
 	bool result;
 
 	int fl1;
@@ -494,7 +246,7 @@ bool deleteProduct(int ID) // Set quantity to negative.
 bool modifyProduct(Product n)
 {
 	int i = n.id;
-	int fd = open("Product_List", O_RDWR, 0744);
+	int fd = open("Product_List", O_RDWR, 0777);
 	bool result = false;
 
 	int fl1;
@@ -532,13 +284,13 @@ bool modifyProduct(Product n)
 
 bool addProductToCart(int product_id, int ID, int quantity)
 {
-	int i = ID - 1000;
+	int i = ID;
 	bool result;
 	result = false;
 	int fl1;
 	int fd;
 
-	fd = open("Customer_User", O_RDWR, 0744);
+	fd = open("Customer_User", O_RDWR, 0777);
 
 	struct flock lock;
 	lock.l_type = F_WRLCK;
@@ -560,7 +312,7 @@ bool addProductToCart(int product_id, int ID, int quantity)
 
 	int cart_id = c.cart_id;
 	i = cart_id - 1000;
-	fd = open("Cart_List", O_RDWR, 0744);
+	fd = open("Cart_List", O_RDWR, 0777);
 
 	// struct flock lock;
 	lock.l_type = F_WRLCK;
@@ -605,66 +357,81 @@ bool addProductToCart(int product_id, int ID, int quantity)
 
 Product getProductById(int ID)
 {
-	int i = ID - 1000;
-	Product p;
-	int fd = open("Product_List", O_RDONLY, 0744);
+	int i = ID - 1;
+	printf("i: %d\n", i);
+	Product p = {-1, "==", -1, -1};
+	int fd = open("Product_List", O_RDWR);
+	lseek(fd, 0, SEEK_SET);
 	int l1;
 	struct flock lock;
 
 	lock.l_type = F_RDLCK;
 	lock.l_whence = SEEK_SET;
-	lock.l_start = (i) * sizeof(Product);
-	lock.l_len = sizeof(Product);
+	lock.l_start = 0;
+	lock.l_len = 0;
 	lock.l_pid = getpid();
+	printf("1\n");
 	l1 = fcntl(fd, F_SETLKW, &lock);
 	lseek(fd, i * sizeof(Product), SEEK_SET);
-	read(fd, &p, sizeof(p));
+	printf("2\n");
+	int ret;
+	Product t;
+	ret = read(fd, &t, sizeof(Product));
+	
+	p.id = t.id;
+	strcpy(p.name, t.name);
+	p.price = t.price;
+	p.quantity = t.quantity;
+
+	printf("3\n");
 	lock.l_type = F_UNLCK;
 	fcntl(fd, F_SETLK, &lock);
+	printf("4\n");
 	close(fd);
 	return p;
 }
 
-Product* getAllProducts()
+Product* getAllProducts(Product p_arr[])
 {
-	Product* p_arr = malloc(sizeof(Product)*30);
+	// Product *p_arr = malloc(sizeof(Product) * 30);
 
 	Product p;
-	int fd = open("Product_List", O_RDONLY, 0744);
-	int l1;
-	struct flock lock;
-	int ndx = 0;
-	while (ndx < 30)
-	{
-		lock.l_type = F_RDLCK;
-		lock.l_whence = SEEK_SET;
-		lock.l_start = (ndx) * sizeof(Product);
-		lock.l_len = sizeof(Product);
-		lock.l_pid = getpid();
-		l1 = fcntl(fd, F_SETLKW, &lock);
-		lseek(fd, ndx * sizeof(Product), SEEK_SET);
-		int ret = -1;
-		ret = read(fd, &p, sizeof(p));
 
-		if (ret == sizeof(Product))
-		{
-			p_arr[ndx] = p;
-		}
-		else{
-			Product empty_product;
-			empty_product.id = -10;
-			p_arr[ndx] = empty_product;
-			break;
-		}
+	int fd = open("Product_List", O_RDONLY);
+	// printf("fd %d\n",fd);
+	// int l1;
+	// struct flock lock;
+	// int ndx = 0;
+	// lock.l_type = F_RDLCK;
+	// lock.l_whence = SEEK_SET;
+	// // lock.l_start = (ndx) * sizeof(Product);
+	// lock.l_start = 0;
+	// lock.l_len = 0;
+	// // lock.l_len = sizeof(Product);
+	// lock.l_pid = getpid();
+	// l1 = fcntl(fd, F_SETLKW, &lock);
+	int ndx = 0;
+	while (read(fd, &p, sizeof(struct Product)) > 0)
+	{
+		// lseek(fd, ndx * sizeof(Product), SEEK_SET);
+		// int ret = -1;
+		// ret = read(fd, &p, sizeof(p));
+
+		printf("---:%s\n", p.name);
+
+		p_arr[ndx].id = p.id;
+		p_arr[ndx].price = p.price;
+		p_arr[ndx].quantity = p.quantity;
+		strcpy(p_arr[ndx].name, p.name);
+	
 
 		ndx++;
 	}
 
-	lock.l_type = F_UNLCK;
-	fcntl(fd, F_SETLK, &lock);
+	// lock.l_type = F_UNLCK;
+	// fcntl(fd, F_SETLK, &lock);
 	close(fd);
-
-	return p_arr;
+	return(p_arr);
 }
 
 Cart getCartByCustomer(int ID)
@@ -675,7 +442,7 @@ Cart getCartByCustomer(int ID)
 	int fl1;
 	int fd;
 
-	fd = open("Customer_User", O_RDWR, 0744);
+	fd = open("Customer_User", O_RDWR, 0777);
 
 	struct flock lock;
 	lock.l_type = F_WRLCK;
@@ -697,7 +464,7 @@ Cart getCartByCustomer(int ID)
 
 	int cart_id = c.cart_id;
 	i = cart_id - 1000;
-	fd = open("Cart_List", O_RDWR, 0744);
+	fd = open("Cart_List", O_RDWR, 0777);
 
 	// struct flock lock;
 	lock.l_type = F_WRLCK;
@@ -713,7 +480,8 @@ Cart getCartByCustomer(int ID)
 	int ret = -10;
 	ret = read(fd, &ct, sizeof(Cart));
 
-	if(ret != sizeof(Cart)){
+	if (ret != sizeof(Cart))
+	{
 		ct.id = -10;
 	}
 
@@ -732,7 +500,7 @@ bool updateProductInCart(int ID, Product product)
 	int fl1;
 	int fd;
 
-	fd = open("Customer_User", O_RDWR, 0744);
+	fd = open("Customer_User", O_RDWR, 0777);
 
 	struct flock lock;
 	lock.l_type = F_WRLCK;
@@ -754,7 +522,7 @@ bool updateProductInCart(int ID, Product product)
 
 	int cart_id = c.cart_id;
 	i = cart_id - 1000;
-	fd = open("Cart_List", O_RDWR, 0744);
+	fd = open("Cart_List", O_RDWR, 0777);
 
 	// struct flock lock;
 	lock.l_type = F_WRLCK;
@@ -770,8 +538,10 @@ bool updateProductInCart(int ID, Product product)
 	read(fd, &ct, sizeof(Cart));
 
 	int ndx = 0;
-	while(ndx < 25){
-		if(ct.cart[ndx].id = product.id){
+	while (ndx < 25)
+	{
+		if (ct.cart[ndx].id = product.id)
+		{
 			ct.cart[ndx] = product;
 			result = true;
 			break;
@@ -783,229 +553,7 @@ bool updateProductInCart(int ID, Product product)
 	fcntl(fd, F_SETLK, &lock);
 	close(fd);
 
-	return(result);
+	return (result);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// bool depositMoney(int account_type, int ID, float amnt)
-// {
-// 	int i = ID - 1000;
-// 	bool result;
-// 	int fl1;
-// 	int fd;
-// 	switch (account_type)
-// 	{
-// 	case 1:
-// 		fd = open("Normal_User", O_RDWR, 0744);
-
-// 		struct flock lock;
-// 		lock.l_type = F_WRLCK;
-// 		lock.l_whence = SEEK_SET;
-// 		lock.l_start = (i) * sizeof(normal);
-// 		lock.l_len = sizeof(normal);
-// 		lock.l_pid = getpid();
-
-// 		fl1 = fcntl(fd, F_SETLKW, &lock);
-
-// 		normal c;
-// 		lseek(fd, (i) * sizeof(normal), SEEK_SET);
-// 		read(fd, &c, sizeof(normal));
-
-// 		if (!strcmp(c.details, "ACTIVE"))
-// 		{
-// 			c.balance += amnt;
-// 			lseek(fd, sizeof(normal) * (-1), SEEK_CUR);
-// 			write(fd, &c, sizeof(normal));
-// 			result = true;
-// 		}
-// 		else
-// 			result = false;
-// 		lock.l_type = F_UNLCK;
-// 		fcntl(fd, F_SETLK, &lock);
-
-// 		close(fd);
-// 		return result;
-
-// 		break;
-// 	case 2:
-// 		fd = open("Joint_User", O_RDWR, 0744);
-
-// 		lock.l_type = F_WRLCK;
-// 		lock.l_whence = SEEK_SET;
-// 		lock.l_start = (i) * sizeof(joint);
-// 		lock.l_len = sizeof(joint);
-// 		lock.l_pid = getpid();
-
-// 		fl1 = fcntl(fd, F_SETLKW, &lock);
-
-// 		joint currUser;
-// 		lseek(fd, (i) * sizeof(joint), SEEK_SET);
-// 		read(fd, &currUser, sizeof(joint));
-
-// 		if (!strcmp(currUser.details, "ACTIVE"))
-// 		{
-// 			currUser.balance += amnt;
-// 			lseek(fd, sizeof(joint) * (-1), SEEK_CUR);
-// 			write(fd, &currUser, sizeof(joint));
-// 			result = true;
-// 		}
-// 		else
-// 			result = false;
-// 		lock.l_type = F_UNLCK;
-// 		fcntl(fd, F_SETLK, &lock);
-
-// 		close(fd);
-// 		return result;
-
-// 	default:
-
-// 		break;
-// 	}
-
-// 	return false;
-// }
-// bool withdrawMoney(int account_type, int ID, float amnt)
-// {
-// 	int i = ID - 1000;
-// 	bool res;
-// 	int fl1;
-// 	struct flock lock;
-// 	int fd;
-// 	switch (account_type)
-// 	{
-// 	case 1:
-// 		fd = open("Normal_User", O_RDWR, 0744);
-
-// 		lock.l_type = F_WRLCK;
-// 		lock.l_whence = SEEK_SET;
-// 		lock.l_start = (i) * sizeof(normal);
-// 		lock.l_len = sizeof(normal);
-// 		lock.l_pid = getpid();
-
-// 		fl1 = fcntl(fd, F_SETLKW, &lock);
-
-// 		normal currUser;
-// 		lseek(fd, (i) * sizeof(normal), SEEK_SET);
-// 		read(fd, &currUser, sizeof(normal));
-
-// 		if (!strcmp(currUser.details, "ACTIVE") && currUser.balance >= amnt)
-// 		{
-// 			currUser.balance -= amnt;
-// 			lseek(fd, sizeof(normal) * (-1), SEEK_CUR);
-// 			write(fd, &currUser, sizeof(normal));
-// 			res = true;
-// 		}
-// 		else
-// 			res = false;
-// 		lock.l_type = F_UNLCK;
-// 		fcntl(fd, F_SETLK, &lock);
-
-// 		close(fd);
-// 		return res;
-
-// 		break;
-// 	case 2:
-// 		fd = open("Joint_User", O_RDWR, 0744);
-
-// 		lock.l_type = F_WRLCK;
-// 		lock.l_whence = SEEK_SET;
-// 		lock.l_start = (i) * sizeof(joint);
-// 		lock.l_len = sizeof(joint);
-// 		lock.l_pid = getpid();
-
-// 		fl1 = fcntl(fd, F_SETLKW, &lock);
-
-// 		joint c;
-// 		lseek(fd, (i) * sizeof(joint), SEEK_SET);
-// 		read(fd, &c, sizeof(joint));
-
-// 		if (!strcmp(c.details, "ACTIVE") && c.balance >= amnt)
-// 		{
-// 			c.balance -= amnt;
-// 			lseek(fd, sizeof(joint) * (-1), SEEK_CUR);
-// 			write(fd, &c, sizeof(joint));
-// 			res = true;
-// 		}
-// 		else
-// 			res = false;
-// 		lock.l_type = F_UNLCK;
-// 		fcntl(fd, F_SETLK, &lock);
-
-// 		close(fd);
-// 		return res;
-
-// 	default:
-// 		break;
-// 	}
-// 	return false;
-// }
-// float getBalance(int account_type, int ID)
-// {
-// 	int i = ID - 1000;
-// 	float result;
-// 	int fl1;
-// 	struct flock lock;
-// 	int fd;
-// 	switch (account_type)
-// 	{
-// 	case 1:
-
-// 		fd = open("Normal_User", O_RDONLY, 0744);
-// 		normal temp;
-
-// 		lock.l_type = F_RDLCK;
-// 		lock.l_whence = SEEK_SET;
-// 		lock.l_start = (i) * sizeof(normal);
-// 		lock.l_len = sizeof(normal);
-// 		lock.l_pid = getpid();
-
-// 		fl1 = fcntl(fd, F_SETLKW, &lock);
-
-// 		lseek(fd, (i) * sizeof(normal), SEEK_SET);
-// 		read(fd, &temp, sizeof(normal));
-
-// 		if (!strcmp(temp.details, "ACTIVE"))
-// 			result = temp.balance;
-// 		else
-// 			result = 0;
-
-// 		lock.l_type = F_UNLCK;
-// 		fcntl(fd, F_SETLK, &lock);
-
-// 		close(fd);
-// 		return result;
-
-// 		break;
-// 	case 2:
-
-// 		fd = open("Joint_User", O_RDONLY, 0744);
-// 		joint j;
-// 		lock.l_type = F_RDLCK;
-// 		lock.l_whence = SEEK_SET;
-// 		lock.l_start = (i) * sizeof(joint);
-// 		lock.l_len = sizeof(joint);
-// 		lock.l_pid = getpid();
-
-// 		fl1 = fcntl(fd, F_SETLKW, &lock);
-
-// 		lseek(fd, (i) * sizeof(joint), SEEK_SET);
-// 		read(fd, &j, sizeof(j));
-// 		if (!strcmp(j.details, "ACTIVE"))
-// 			result = j.balance;
-// 		else
-// 			result = 0;
-
-// 		lock.l_type = F_UNLCK;
-// 		fcntl(fd, F_SETLK, &lock);
-
-// 		close(fd);
-// 		return result;
-// 		break;
-
-// 	default:
-// 		break;
-// 	}
-// 	return 0;
-// }
-
