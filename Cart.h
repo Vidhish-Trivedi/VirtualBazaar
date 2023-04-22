@@ -7,5 +7,4 @@
 typedef struct Cart{
     int id;
     int customer_id;
-    Product cart[25];
 } Cart;

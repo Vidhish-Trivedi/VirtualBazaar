@@ -66,19 +66,9 @@ int main()
                     write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
                     for (int idx = 0; idx < 30; idx++)
                     {
-                        if(product_array[idx].id == -10){
-                            break;
+                        if(product_array[idx].id != -1){
+                            printf("%3d\t %20s\t %5d\t %4d\n", product_array[idx].id, product_array[idx].name, product_array[idx].quantity, product_array[idx].price); // For formatting.
                         }
-                        printf("%3d %20s %5d %4d\n", product_array[idx].id, product_array[idx].name, product_array[idx].quantity, product_array[idx].price); // For formatting.
-
-                        // if (product_array[idx].id < 0)
-                        // {
-                        //     break;
-                        // }
-                        // else
-                        // {
-                        //     printf("%3d %20s %5d %4d\n", product_array[idx].id, product_array[idx].name, product_array[idx].quantity, product_array[idx].price); // For formatting.
-                        // }
                     }
                 }
                 else if (option == 2) // List products in cart
@@ -119,8 +109,9 @@ int main()
                     int a, b, c;
                     char buf[100];
 
+                    write(1, "Enter p_id, p_name, price and quantity as space-seperated values:\n", sizeof("Enter p_id, p_name, price and quantity as space-seperated values:\n"));
                     scanf("%d %s %d %d", &a, buf, &b, &c);
-                    // Product p = {a, buf, b, c};
+
                     Product p;
                     p.id = a;
                     strcpy(p.name, buf);
@@ -128,7 +119,7 @@ int main()
                     p.quantity = c;
 
                     Query q = {1, 2, p};
-                    
+
                     write(sckfd, &q, sizeof(Query));
 
                     bool res;

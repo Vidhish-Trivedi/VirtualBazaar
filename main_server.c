@@ -31,14 +31,14 @@ int main()
 	bind(sd, (struct sockaddr *)&server, sizeof(server));
 	listen(sd, 5);
 
-	write(1, "Waiting for the client.....\n", 29);
+	write(1, "Waiting for the client.....\n", sizeof("Waiting for the client.....\n"));
 
 	while (1)
 	{
 		clientLen = sizeof(client);
 		nsd = accept(sd, (struct sockaddr *)&client, &clientLen);
 
-		write(1, "Connected to the client.....\n", 30);
+		write(1, "Connected to the client.....\n", sizeof("Connected to the client.....\n"));
 		if (pthread_create(&threads, NULL, (void *)connection, (void *)&nsd) < 0)
 		{
 			perror("could not create thread");

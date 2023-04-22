@@ -27,9 +27,9 @@ typedef struct Query
 typedef struct Customer
 {
 	int id;
-	int cart_id;
 	char name[30];
 	char password[10];
+	Product cart[25];
 	char details[50];
 } Customer;
 
@@ -45,25 +45,20 @@ typedef struct Admin
 // Customer actions.
 Product* getAllProducts(Product p_arr[]);
 Product getProductById(int product_id);
-Cart getCartByCustomer(int customer_id);
+Product* getCartByCustomer(int customer_id);
 bool addProductToCart(int product_id, int customer_id, int quantity);
 bool updateProductInCart(int customer_id, Product product);		// 0 on success.
-bool alterPass(int acc_type, int ID, char newPwd[10]);
 
 // Admin actions.
 bool addCustomer(Customer r);
-bool deleteCustomer(int customer_id);
 bool addProduct(Product product);
 bool deleteProduct(int product_id);
 bool modifyProduct(Product product);		// set field to -1 when you don't want to update it.
 // bool generateLog();
-bool modifyCustomer(Customer n);
 
 // Miscellaneous.
 Customer getCustomer(int customer_id);
 Admin getAdmin(int ID);
-bool checkCustomer(Customer u);
-bool checkAdmin(Admin u);
 
 // Utils for connection.
 void server(int new_sd);
