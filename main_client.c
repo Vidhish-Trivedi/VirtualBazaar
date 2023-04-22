@@ -4,29 +4,40 @@
 
 /* Client */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<arpa/inet.h>
+#include<unistd.h>
+#include<stdbool.h>
 #include "Item.h"
 
 int main()
 {
-    int sckfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sckfd == -1)
-    {
-        perror(" ");
-    }
-    struct sockaddr_in sddr;
-    sddr.sin_port = htons(8080);
-    sddr.sin_family = AF_INET;
-    sddr.sin_addr.s_addr = INADDR_ANY;
-    int cntfd = connect(sckfd, (struct sockaddr *)&sddr, sizeof(sddr));
-    if (cntfd == -1)
-    {
-        perror(" ");
-    }
+    // int sckfd = socket(AF_INET, SOCK_STREAM, 0);
+    // if (sckfd == -1)
+    // {
+    //     perror(" ");
+    // }
+    // struct sockaddr_in sddr;
+    // sddr.sin_port = htons(5000);
+    // sddr.sin_family = AF_INET;
+    // sddr.sin_addr.s_addr = INADDR_ANY;
+    // int cntfd = connect(sckfd, (struct sockaddr *)&sddr, sizeof(sddr));
+    // if (cntfd == -1)
+    // {
+    //     perror(" ");
+    // }
+
+    struct sockaddr_in server;
+    int sckfd;
+    sckfd = socket(AF_INET, SOCK_STREAM, 0);
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server.sin_port = htons(5000);
+    connect(sckfd, (struct sockaddr *)&server, sizeof(server));
 
     int userType = -1;
     while (userType <= 0)
@@ -36,7 +47,9 @@ int main()
         write(1, "2.) Admin\n", sizeof("2.) Admin\n"));
         write(1, "3.) Exit application\n", sizeof("3.) Exit application\n"));
 
-        read(0, &userType, sizeof(userType));
+        // read(0, &userType, sizeof(int));
+        // write(1, &userType, sizeof(int));
+        scanf("%d", &userType);
 
         if (userType == 1)
         {
@@ -48,13 +61,15 @@ int main()
                 write(1, "2.) List products in cart\n", sizeof("2.) List products in cart\n"));
                 write(1, "3.) Add to cart\n", sizeof("3.) Add to cart\n"));
                 write(1, "4.) Update cart\n", sizeof("4.) Update cart\n"));
-                write(1, "5.) Exit\n", sizeof("5.) Exit"));
-                read(0, &option, sizeof(option));
+                write(1, "5.) Exit\n", sizeof("5.) Exit\n"));
+                // read(0, &option, sizeof(option));
+                scanf("%d", &option);
+
                 if (option == 1) // List all products.
                 {
                     int val = 1;
                     write(sckfd, &val, 4);
-                    Product product_array[100];
+                    Product product_array[30];
                     read(sckfd, product_array, sizeof(product_array));
                     write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
                     for (int idx = 0; idx < 100; idx++)
@@ -82,7 +97,8 @@ int main()
                 {
                     break;
                 }
-                else{
+                else
+                {
                     write(1, "Invalid Choice... Try again!\n", sizeof("Invalid Choice... Try again!\n"));
                 }
             }
@@ -98,19 +114,16 @@ int main()
                 write(1, "3.) Update product details\n", sizeof("3.) Update product details\n"));
                 write(1, "4.) Exit\n", sizeof("4.) Exit\n"));
                 read(0, &option, sizeof(option));
-                if (option == 1)    // Add a product
+                if (option == 1) // Add a product
                 {
-
                 }
-                else if(option == 2) // Delete a product
+                else if (option == 2) // Delete a product
                 {
-
                 }
-                else if(option == 3) // Update product details.
+                else if (option == 3) // Update product details.
                 {
-
                 }
-                else if(option == 4) // Exit, generate product stock log.
+                else if (option == 4) // Exit, generate product stock log.
                 {
                     // ! TODO: Generate log file.
                     break;
@@ -132,7 +145,7 @@ int main()
         {
             // Invalid
             userType = -1;
-            write(1, "Invalid Choice... Try again!\n", sizeof("Invalid Choice... Try again!\n"));
+            write(1, "Invalid Choice of user... Try again!\n", sizeof("Invalid Choice... Try again!\n"));
         }
     }
 

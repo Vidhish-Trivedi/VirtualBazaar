@@ -1,7 +1,17 @@
 /* Code written by: IMT2021055 - Vidhish Trivedi
    Project made as part of Operating Systems course at IIIT-Bangalore.
 */
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <stdbool.h>
+#include <string.h>
+#include <fcntl.h>
+#include <pthread.h>
+#include <arpa/inet.h>
 #include "server.h"
 
 int main()
@@ -29,7 +39,7 @@ int main()
 		nsd = accept(sd, (struct sockaddr *)&client, &clientLen);
 
 		write(1, "Connected to the client.....\n", 30);
-		if (pthread_create(&threads, NULL, connection, (void *)&nsd) < 0)
+		if (pthread_create(&threads, NULL, (void *)connection, (void *)&nsd) < 0)
 		{
 			perror("could not create thread");
 			return 1;

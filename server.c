@@ -3,11 +3,58 @@
 */
 
 #include "server.h"
+// #include "Cart.h"
 
 // Server side CRUD operations which works analogous to Client side information.
 // Check whether file is present or not and take necessary action (locking and unlocking)
 // Prepare a response
 // Send the reponse to client
+
+bool alterPassword(int user_type, int ID, char newpass[10])
+{
+	int i = ID - 1000;
+	int fd;
+	int fl1;
+	bool result;
+	struct flock lock;
+	switch (user_type)
+	{
+	case 1: // customer
+		fd = open("Customer_User", O_RDWR, 0744);
+
+		lock.l_type = F_WRLCK;
+		lock.l_whence = SEEK_SET;
+		lock.l_start = (i) * sizeof(Customer);
+		lock.l_len = sizeof(Customer);
+		lock.l_pid = getpid();
+
+		fl1 = fcntl(fd, F_SETLKW, &lock);
+
+		Customer n;
+		lseek(fd, (i) * sizeof(Customer), SEEK_SET);
+		read(fd, &n, sizeof(Customer));
+
+		if (!strcmp(n.details, "ACTIVE"))
+		{
+			strcpy(n.password, newpass);
+			lseek(fd, sizeof(Customer) * (-1), SEEK_CUR);
+			write(fd, &n, sizeof(Customer));
+			result = true;
+		}
+		else
+			result = false;
+		lock.l_type = F_UNLCK;
+		fcntl(fd, F_SETLK, &lock);
+
+		close(fd);
+		return result;
+		break;
+	default:
+		break;
+	}
+
+	return false;
+}
 
 void server(int nsd)
 {
@@ -204,52 +251,6 @@ bool checkAdmin(Admin c)
 	return res;
 }
 
-bool alterPassword(int user_type, int ID, char newpass[10])
-{
-	int i = ID - 1000;
-	int fd;
-	int fl1;
-	bool result;
-	struct flock lock;
-	switch (user_type)
-	{
-	case 1: // customer
-		fd = open("Customer_User", O_RDWR, 0744);
-
-		lock.l_type = F_WRLCK;
-		lock.l_whence = SEEK_SET;
-		lock.l_start = (i) * sizeof(Customer);
-		lock.l_len = sizeof(Customer);
-		lock.l_pid = getpid();
-
-		fl1 = fcntl(fd, F_SETLKW, &lock);
-
-		Customer n;
-		lseek(fd, (i) * sizeof(Customer), SEEK_SET);
-		read(fd, &n, sizeof(Customer));
-
-		if (!strcmp(n.details, "ACTIVE"))
-		{
-			strcpy(n.password, newpass);
-			lseek(fd, sizeof(Customer) * (-1), SEEK_CUR);
-			write(fd, &n, sizeof(Customer));
-			result = true;
-		}
-		else
-			result = false;
-		lock.l_type = F_UNLCK;
-		fcntl(fd, F_SETLK, &lock);
-
-		close(fd);
-		return result;
-		break;
-	default:
-		break;
-	}
-
-	return false;
-}
-
 Customer getCustomer(int ID)
 {
 	int i = ID - 1000;
@@ -337,6 +338,47 @@ bool addCustomer(Customer u)
 	close(fd);
 	return res;
 }
+
+// ! TODO: Check this!
+bool modifyCustomer(Customer n)
+{
+	int i = n.id - 1000;
+	int fd = open("Customer_User", O_RDWR, 0744);
+	bool result = false;
+
+	int fl1;
+	struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Customer);
+	lock.l_len = sizeof(Customer);
+	lock.l_pid = getpid();
+
+	fl1 = fcntl(fd, F_SETLKW, &lock);
+
+	// Read the corresponding customer data entry.
+	Customer t;
+	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
+	read(fd, &t, sizeof(Customer));
+
+	if (!strcmp(t.details, "ACTIVE") && (n.id == t.id))
+	{
+		strcpy(n.details, "ACTIVE");
+		lseek(fd, (-1) * sizeof(Customer), SEEK_CUR);
+		int j = write(fd, &n, sizeof(Customer));
+		if (j != 0)
+			result = true;
+		else
+			result = false;
+	}
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+
+	close(fd);
+	return result;
+}
+
 
 bool addProduct(Product p)
 {
@@ -449,46 +491,6 @@ bool deleteProduct(int ID) // Set quantity to negative.
 	return result;
 }
 
-// ! TODO: Check this!
-bool modifyCustomer(Customer n)
-{
-	int i = n.id - 1000;
-	int fd = open("Customer_User", O_RDWR, 0744);
-	bool result = false;
-
-	int fl1;
-	struct flock lock;
-	lock.l_type = F_WRLCK;
-	lock.l_whence = SEEK_SET;
-	lock.l_start = (i) * sizeof(Customer);
-	lock.l_len = sizeof(Customer);
-	lock.l_pid = getpid();
-
-	fl1 = fcntl(fd, F_SETLKW, &lock);
-
-	// Read the corresponding customer data entry.
-	Customer t;
-	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
-	read(fd, &t, sizeof(Customer));
-
-	if (!strcmp(t.details, "ACTIVE") && (n.id == t.id))
-	{
-		strcpy(n.details, "ACTIVE");
-		lseek(fd, (-1) * sizeof(Customer), SEEK_CUR);
-		int j = write(fd, &n, sizeof(Customer));
-		if (j != 0)
-			result = true;
-		else
-			result = false;
-	}
-
-	lock.l_type = F_UNLCK;
-	fcntl(fd, F_SETLK, &lock);
-
-	close(fd);
-	return result;
-}
-
 bool modifyProduct(Product n)
 {
 	int i = n.id;
@@ -514,8 +516,8 @@ bool modifyProduct(Product n)
 	t.price = n.price;
 	t.quantity = n.quantity;
 
-	lseek(fd, (-1) * sizeof(Customer), SEEK_CUR);
-	int j = write(fd, &n, sizeof(Customer));
+	lseek(fd, (-1) * sizeof(Product), SEEK_CUR);
+	int j = write(fd, &t, sizeof(Product));
 	if (j != 0)
 		result = true;
 	else
@@ -526,6 +528,262 @@ bool modifyProduct(Product n)
 
 	close(fd);
 	return result;
+}
+
+bool addProductToCart(int product_id, int ID, int quantity)
+{
+	int i = ID - 1000;
+	bool result;
+	result = false;
+	int fl1;
+	int fd;
+
+	fd = open("Customer_User", O_RDWR, 0744);
+
+	struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Customer);
+	lock.l_len = sizeof(Customer);
+	lock.l_pid = getpid();
+
+	fl1 = fcntl(fd, F_SETLKW, &lock);
+
+	Customer c;
+	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
+	read(fd, &c, sizeof(Customer));
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+
+	close(fd);
+
+	int cart_id = c.cart_id;
+	i = cart_id - 1000;
+	fd = open("Cart_List", O_RDWR, 0744);
+
+	// struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Cart);
+	lock.l_len = sizeof(Cart);
+	lock.l_pid = getpid();
+
+	fl1 = fcntl(fd, F_SETLKW, &lock);
+
+	Cart ct;
+	lseek(fd, (i) * sizeof(Cart), SEEK_SET);
+	read(fd, &ct, sizeof(Cart));
+
+	int ndx = 0;
+	while (ct.cart[ndx].id != -1 && ndx < 25)
+	{
+		ndx++;
+	}
+
+	// Cart is at capacity.
+	if (ndx == 25)
+	{
+		return (false);
+	}
+	else
+	{
+		Product np;
+		np = getProductById(product_id);
+		ct.cart[ndx] = np;
+		lseek(fd, sizeof(Cart) * (-1), SEEK_CUR);
+		write(fd, &c, sizeof(Cart));
+		result = true;
+	}
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+	close(fd);
+
+	return result;
+}
+
+Product getProductById(int ID)
+{
+	int i = ID - 1000;
+	Product p;
+	int fd = open("Product_List", O_RDONLY, 0744);
+	int l1;
+	struct flock lock;
+
+	lock.l_type = F_RDLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Product);
+	lock.l_len = sizeof(Product);
+	lock.l_pid = getpid();
+	l1 = fcntl(fd, F_SETLKW, &lock);
+	lseek(fd, i * sizeof(Product), SEEK_SET);
+	read(fd, &p, sizeof(p));
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+	close(fd);
+	return p;
+}
+
+Product* getAllProducts()
+{
+	Product* p_arr = malloc(sizeof(Product)*30);
+
+	Product p;
+	int fd = open("Product_List", O_RDONLY, 0744);
+	int l1;
+	struct flock lock;
+	int ndx = 0;
+	while (ndx < 30)
+	{
+		lock.l_type = F_RDLCK;
+		lock.l_whence = SEEK_SET;
+		lock.l_start = (ndx) * sizeof(Product);
+		lock.l_len = sizeof(Product);
+		lock.l_pid = getpid();
+		l1 = fcntl(fd, F_SETLKW, &lock);
+		lseek(fd, ndx * sizeof(Product), SEEK_SET);
+		int ret = -1;
+		ret = read(fd, &p, sizeof(p));
+
+		if (ret == sizeof(Product))
+		{
+			p_arr[ndx] = p;
+		}
+		else{
+			Product empty_product;
+			empty_product.id = -10;
+			p_arr[ndx] = empty_product;
+			break;
+		}
+
+		ndx++;
+	}
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+	close(fd);
+
+	return p_arr;
+}
+
+Cart getCartByCustomer(int ID)
+{
+	int i = ID - 1000;
+	bool result;
+	result = false;
+	int fl1;
+	int fd;
+
+	fd = open("Customer_User", O_RDWR, 0744);
+
+	struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Customer);
+	lock.l_len = sizeof(Customer);
+	lock.l_pid = getpid();
+
+	fl1 = fcntl(fd, F_SETLKW, &lock);
+
+	Customer c;
+	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
+	read(fd, &c, sizeof(Customer));
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+
+	close(fd);
+
+	int cart_id = c.cart_id;
+	i = cart_id - 1000;
+	fd = open("Cart_List", O_RDWR, 0744);
+
+	// struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Cart);
+	lock.l_len = sizeof(Cart);
+	lock.l_pid = getpid();
+
+	fl1 = fcntl(fd, F_SETLKW, &lock);
+
+	Cart ct;
+	lseek(fd, (i) * sizeof(Cart), SEEK_SET);
+	int ret = -10;
+	ret = read(fd, &ct, sizeof(Cart));
+
+	if(ret != sizeof(Cart)){
+		ct.id = -10;
+	}
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+	close(fd);
+
+	return ct;
+}
+
+bool updateProductInCart(int ID, Product product)
+{
+	int i = ID - 1000;
+	bool result;
+	result = false;
+	int fl1;
+	int fd;
+
+	fd = open("Customer_User", O_RDWR, 0744);
+
+	struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Customer);
+	lock.l_len = sizeof(Customer);
+	lock.l_pid = getpid();
+
+	fl1 = fcntl(fd, F_SETLKW, &lock);
+
+	Customer c;
+	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
+	read(fd, &c, sizeof(Customer));
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+
+	close(fd);
+
+	int cart_id = c.cart_id;
+	i = cart_id - 1000;
+	fd = open("Cart_List", O_RDWR, 0744);
+
+	// struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Cart);
+	lock.l_len = sizeof(Cart);
+	lock.l_pid = getpid();
+
+	fl1 = fcntl(fd, F_SETLKW, &lock);
+
+	Cart ct;
+	lseek(fd, (i) * sizeof(Cart), SEEK_SET);
+	read(fd, &ct, sizeof(Cart));
+
+	int ndx = 0;
+	while(ndx < 25){
+		if(ct.cart[ndx].id = product.id){
+			ct.cart[ndx] = product;
+			result = true;
+			break;
+		}
+		ndx++;
+	}
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+	close(fd);
+
+	return(result);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -750,3 +1008,4 @@ bool modifyProduct(Product n)
 // 	}
 // 	return 0;
 // }
+
