@@ -13,10 +13,3 @@ typedef struct Product{
     int price;
     int quantity;
 } Product;
-
-// Struct for order.
-typedef struct Order{
-    int order_id;
-    int customer_id;
-    Product cart[25];
-} Order;

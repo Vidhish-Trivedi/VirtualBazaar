@@ -14,11 +14,14 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 #include <Item.h>
+#include <Order.h>
 
 typedef struct Query
 {
 	int query_num;
-	Order cart[25];			// If update, then only cart[0] is used.
+	int user_type;
+	Product product;
+	Order order;
 } Query;
 
 // Customer --> User
@@ -39,16 +42,34 @@ typedef struct Admin
 
 } Admin;
 
-Customer getCustomer(int ID);
-Admin getAdmin(int ID);
-bool checkCustomer(Customer u);
-bool checkAdmin(Admin u);
-// bool depositMoney(int acc_type, int ID, float amnt);
-// bool withdrawMoney(int acc_type, int ID, float amnt);
-// float getBalance(int acc_type, int ID);
+// Customer actions.
+Product* getAllProducts();
+Product getProductById(int product_id);
+Cart getCartByCustomer(int customer_id);
+bool addProductToCart(int customer_id);
+bool updateProductInCart(int customer_id, Product product);
 bool alterPass(int acc_type, int ID, char newPwd[10]);
+
+// Admin actions.
 bool addCustomer(Customer r);
 bool deleteCustomer(int ID);
 bool modifyCustomer(Customer n);
+bool addProduct(Product product);
+bool deleteProduct(int product_id);
+bool updateProduct(Product product);		// set field to -1 when you don't want to update it.
+bool generateLog();
+
+// Miscellaneous.
+Customer getCustomer(int customer_id);
+Admin getAdmin(int ID);
+bool checkCustomer(Customer u);
+bool checkAdmin(Admin u);
+
+// Utils for connection.
 void server(int new_sd);
 void *connection(void *nsd);
+
+// bool depositMoney(int acc_type, int ID, float amnt);
+// bool withdrawMoney(int acc_type, int ID, float amnt);
+// float getBalance(int acc_type, int ID);
+
