@@ -13,15 +13,15 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <arpa/inet.h>
+#include <Item.h>
 
 typedef struct Query
 {
 	int query_num;
-	int val;
-	float money;
-
+	Order cart[25];			// If update, then only cart[0] is used.
 } Query;
 
+// Customer --> User
 typedef struct Customer
 {
 	int id;
@@ -30,14 +30,7 @@ typedef struct Customer
 	char details[100];
 } Customer;
 
-typedef struct Seller
-{
-	int id;
-	char name[30];
-	char password[10];
-	char details[100];
-} Seller;
-
+// Admin
 typedef struct Admin
 {
 	int id;
@@ -46,21 +39,16 @@ typedef struct Admin
 
 } Admin;
 
-Customer getNormalUser(int ID);
-Seller getJointUser(int ID);
+Customer getCustomer(int ID);
 Admin getAdmin(int ID);
-bool checkNormalUser(Customer u);
-bool checkJointUser(Seller u);
+bool checkCustomer(Customer u);
 bool checkAdmin(Admin u);
-bool depositMoney(int acc_type, int ID, float amnt);
-bool withdrawMoney(int acc_type, int ID, float amnt);
-float getBalance(int acc_type, int ID);
+// bool depositMoney(int acc_type, int ID, float amnt);
+// bool withdrawMoney(int acc_type, int ID, float amnt);
+// float getBalance(int acc_type, int ID);
 bool alterPass(int acc_type, int ID, char newPwd[10]);
-bool addNormalUser(Customer r);
-bool addJointUser(Seller j);
-bool deleteNormalUser(int ID);
-bool deleteJointUser(int ID);
-bool modifyNormalUser(Customer n);
-bool modifyJointUser(Seller j);
+bool addCustomer(Customer r);
+bool deleteCustomer(int ID);
+bool modifyCustomer(Customer n);
 void server(int new_sd);
 void *connection(void *nsd);

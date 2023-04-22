@@ -28,21 +28,10 @@ void server(int nsd)
 			printf("Username : %d\n", currUser1.id);
 			printf("Password : %s\n", currUser1.password);
 			currUserID = currUser1.id;
-			result = checkNormalUser(currUser1);
+			result = checkCustomer(currUser1);
 			write(nsd, &result, sizeof(result));
 		}
 		else if (option == 2)
-		{
-			Seller currUser2;
-			accType = 2;
-			msgLength = read(nsd, &currUser2, sizeof(Seller));
-			currUserID = currUser2.id;
-			printf("Username : %d\n", currUser2.id);
-			printf("Password : %s\n", currUser2.password);
-			result = checkJointUser(currUser2);
-			write(nsd, &result, sizeof(result));
-		}
-		else if (option == 3)
 		{
 			Admin currUser3;
 			accType = 3;
@@ -62,34 +51,35 @@ void server(int nsd)
 			break;
 	}
 
+	// Handling requests.
 	while (1)
 	{
 		read(nsd, &q, sizeof(Query));
 
 		if (option == 1 || option == 2)
 		{
-			if (q.query_num == 1)
-			{
-				float amt = q.money;
+			// if (q.query_num == 1)
+			// {
+			// 	float amt = q.money;
 
-				result = depositMoney(accType, currUserID, amt);
-				write(nsd, &result, sizeof(result));
-			}
-			else if (q.query_num == 2)
-			{
-				float amt = q.money;
+			// 	result = depositMoney(accType, currUserID, amt);
+			// 	write(nsd, &result, sizeof(result));
+			// }
+			// else if (q.query_num == 2)
+			// {
+			// 	float amt = q.money;
 
-				result = withdrawMoney(accType, currUserID, amt);
-				write(nsd, &result, sizeof(result));
-			}
-			else if (q.query_num == 3)
-			{
-				float amt;
+			// 	result = withdrawMoney(accType, currUserID, amt);
+			// 	write(nsd, &result, sizeof(result));
+			// }
+			// else if (q.query_num == 3)
+			// {
+			// 	float amt;
 
-				amt = getBalance(accType, currUserID);
-				write(nsd, &amt, sizeof(float));
-			}
-			else if (q.query_num == 4)
+			// 	amt = getBalance(accType, currUserID);
+			// 	write(nsd, &amt, sizeof(float));
+			// }
+			if (q.query_num == 4)
 			{
 				char pwd[10];
 				read(nsd, pwd, sizeof(pwd));
@@ -97,19 +87,6 @@ void server(int nsd)
 				write(nsd, &result, sizeof(result));
 			}
 			else if (q.query_num == 5)
-			{
-				if (option == 1)
-				{
-					Customer user1 = getNormalUser(currUserID);
-					write(nsd, &user1, sizeof(Customer));
-				}
-				else if (option == 2)
-				{
-					Seller user2 = getJointUser(currUserID);
-					write(nsd, &user2, sizeof(Seller));
-				}
-			}
-			else if (q.query_num == 6)
 				break;
 		}
 		else if (option == 3)
@@ -122,14 +99,7 @@ void server(int nsd)
 				{
 					Customer newUser1;
 					read(nsd, &newUser1, sizeof(Customer));
-					result = addNormalUser(newUser1);
-					write(nsd, &result, sizeof(result));
-				}
-				else if (type == 2)
-				{
-					Seller newUser2;
-					read(nsd, &newUser2, sizeof(Seller));
-					result = addJointUser(newUser2);
+					result = addCustomer(newUser1);
 					write(nsd, &result, sizeof(result));
 				}
 			}
@@ -140,14 +110,7 @@ void server(int nsd)
 				{
 					int delUserID1;
 					read(nsd, &delUserID1, sizeof(int));
-					result = deleteNormalUser(delUserID1);
-					write(nsd, &result, sizeof(result));
-				}
-				else if (type == 2)
-				{
-					int delUserID2;
-					read(nsd, &delUserID2, sizeof(int));
-					result = deleteJointUser(delUserID2);
+					result = deleteCustomer(delUserID1);
 					write(nsd, &result, sizeof(result));
 				}
 			}
@@ -158,14 +121,7 @@ void server(int nsd)
 				{
 					Customer modUser1;
 					read(nsd, &modUser1, sizeof(Customer));
-					result = modifyNormalUser(modUser1);
-					write(nsd, &result, sizeof(result));
-				}
-				else if (type == 2)
-				{
-					Seller modUser2;
-					read(nsd, &modUser2, sizeof(Seller));
-					result = modifyJointUser(modUser2);
+					result = modifyCustomer(modUser1);
 					write(nsd, &result, sizeof(result));
 				}
 			}
@@ -177,16 +133,8 @@ void server(int nsd)
 					Customer searchUser1;
 					int userID1;
 					read(nsd, &userID1, sizeof(int));
-					searchUser1 = getNormalUser(userID1);
+					searchUser1 = getCustomer(userID1);
 					write(nsd, &searchUser1, sizeof(Customer));
-				}
-				else if (type == 2)
-				{
-					Seller searchUser2;
-					int userID2;
-					read(nsd, &userID2, sizeof(int));
-					searchUser2 = getJointUser(userID2);
-					write(nsd, &searchUser2, sizeof(Seller));
 				}
 			}
 			else if (q.query_num == 5)
@@ -203,7 +151,6 @@ void *connection(void *nsd)
 	int nsfd = *(int *)nsd;
 	server(nsfd);
 }
-
 
 Admin getAdmin(int ID)
 {
@@ -266,7 +213,7 @@ bool alterPassword(int user_type, int ID, char newpass[10])
 	struct flock lock;
 	switch (user_type)
 	{
-	case 1:		// customer
+	case 1: // customer
 		fd = open("Customer_User", O_RDWR, 0744);
 
 		lock.l_type = F_WRLCK;
@@ -296,36 +243,6 @@ bool alterPassword(int user_type, int ID, char newpass[10])
 		close(fd);
 		return result;
 		break;
-	case 2: 	// seller
-		fd = open("Seller_User", O_RDWR, 0744);
-
-		lock.l_type = F_WRLCK;
-		lock.l_whence = SEEK_SET;
-		lock.l_start = (i) * sizeof(Seller);
-		lock.l_len = sizeof(Seller);
-		lock.l_pid = getpid();
-
-		fl1 = fcntl(fd, F_SETLKW, &lock);
-
-		Seller j;
-		lseek(fd, (i) * sizeof(Seller), SEEK_SET);
-
-		if (!strcmp(j.details, "ACTIVE"))
-		{
-			strcpy(j.password, newpass);
-			lseek(fd, sizeof(Seller) * (-1), SEEK_CUR);
-			write(fd, &j, sizeof(Seller));
-			result = true;
-		}
-		else
-			result = false;
-		lock.l_type = F_UNLCK;
-		fcntl(fd, F_SETLK, &lock);
-
-		close(fd);
-		return result;
-		break;
-
 	default:
 		break;
 	}
@@ -333,108 +250,175 @@ bool alterPassword(int user_type, int ID, char newpass[10])
 	return false;
 }
 
+Customer getCustomer(int ID)
+{
+	int i = ID - 1000;
+	Customer c;
+	int fd = open("Customer_User", O_RDONLY, 0744);
+	int l1;
+	struct flock lock;
 
-// normal getNormalUser(int ID)
-// {
-// 	int i = ID - 1000;
-// 	normal c;
-// 	int fd = open("Normal_User", O_RDONLY, 0744);
-// 	int l1;
-// 	struct flock lock;
+	lock.l_type = F_RDLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Customer);
+	lock.l_len = sizeof(Customer);
+	lock.l_pid = getpid();
+	l1 = fcntl(fd, F_SETLKW, &lock);
+	lseek(fd, i * sizeof(Customer), SEEK_SET);
+	read(fd, &c, sizeof(c));
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+	close(fd);
+	return c;
+}
 
-// 	lock.l_type = F_RDLCK;
-// 	lock.l_whence = SEEK_SET;
-// 	lock.l_start = (i) * sizeof(normal);
-// 	lock.l_len = sizeof(normal);
-// 	lock.l_pid = getpid();
-// 	l1 = fcntl(fd, F_SETLKW, &lock);
-// 	lseek(fd, i * sizeof(normal), SEEK_SET);
-// 	read(fd, &c, sizeof(c));
-// 	lock.l_type = F_UNLCK;
-// 	fcntl(fd, F_SETLK, &lock);
-// 	close(fd);
-// 	return c;
-// }
-// joint getJointUser(int ID)
-// {
-// 	int i = ID - 1000;
-// 	joint c;
-// 	int fd = open("Joint_User", O_RDONLY, 0744);
+bool checkCustomer(Customer c)
+{
+	int i = c.id - 1000;
+	int fd = open("Customer_User", O_RDONLY, 0744);
+	bool res;
+	Customer t;
 
-// 	int l1;
-// 	struct flock lock;
+	int l1;
+	struct flock lock;
+	lock.l_type = F_RDLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = i * sizeof(Customer);
+	lock.l_len = sizeof(Customer);
+	lock.l_pid = getpid();
+	l1 = fcntl(fd, F_SETLKW, &lock);
+	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
+	read(fd, &t, sizeof(Customer));
+	printf("%s %s\n", t.password, c.password);
+	if (!strcmp(t.password, c.password) && !strcmp(t.details, "ACTIVE"))
+		res = true;
+	else
+		res = false;
 
-// 	lock.l_type = F_RDLCK;
-// 	lock.l_whence = SEEK_SET;
-// 	lock.l_start = (i) * sizeof(joint);
-// 	lock.l_len = sizeof(joint);
-// 	lock.l_pid = getpid();
-// 	l1 = fcntl(fd, F_SETLKW, &lock);
-// 	lseek(fd, i * sizeof(joint), SEEK_SET);
-// 	read(fd, &c, sizeof(c));
-// 	lock.l_type = F_UNLCK;
-// 	fcntl(fd, F_SETLK, &lock);
-// 	close(fd);
-// 	return c;
-// }
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
 
-// bool checkNormalUser(normal c)
-// {
-// 	int i = c.id - 1000;
-// 	int fd = open("Normal_User", O_RDONLY, 0744);
-// 	bool res;
-// 	normal t;
+	close(fd);
+	return res;
+}
 
-// 	int l1;
-// 	struct flock lock;
-// 	lock.l_type = F_RDLCK;
-// 	lock.l_whence = SEEK_SET;
-// 	lock.l_start = i * sizeof(normal);
-// 	lock.l_len = sizeof(normal);
-// 	lock.l_pid = getpid();
-// 	l1 = fcntl(fd, F_SETLKW, &lock);
-// 	lseek(fd, (i) * sizeof(normal), SEEK_SET);
-// 	read(fd, &t, sizeof(normal));
-// 	printf("%s %s\n", t.password, c.password);
-// 	if (!strcmp(t.password, c.password) && !strcmp(t.details, "ACTIVE"))
-// 		res = true;
-// 	else
-// 		res = false;
+bool addCustomer(Customer u)
+{
+	int fd = open("Customer_User", O_RDWR, 0744);
+	bool res;
 
-// 	lock.l_type = F_UNLCK;
-// 	fcntl(fd, F_SETLK, &lock);
+	int fl1;
+	struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_END;
+	lock.l_start = (-1) * sizeof(Customer);
+	lock.l_len = sizeof(Customer);
+	lock.l_pid = getpid();
 
-// 	close(fd);
-// 	return res;
-// }
-// bool checkJointUser(joint c)
-// {
-// 	int i = c.id - 1000;
-// 	int fd = open("Joint_User", O_RDONLY, 0744);
-// 	bool res;
-// 	joint t;
+	fl1 = fcntl(fd, F_SETLKW, &lock);
 
-// 	int l1;
-// 	struct flock lock;
-// 	lock.l_type = F_RDLCK;
-// 	lock.l_whence = SEEK_SET;
-// 	lock.l_start = i * sizeof(joint);
-// 	lock.l_len = sizeof(joint);
-// 	lock.l_pid = getpid();
-// 	l1 = fcntl(fd, F_SETLKW, &lock);
-// 	lseek(fd, (i) * sizeof(joint), SEEK_SET);
-// 	read(fd, &t, sizeof(joint));
-// 	if (!strcmp(t.password, c.password) && !strcmp(t.details, "ACTIVE"))
-// 		res = true;
-// 	else
-// 		res = false;
+	// Read the last customer data entry.
+	Customer t;
+	lseek(fd, (-1) * sizeof(Customer), SEEK_END);
+	read(fd, &t, sizeof(Customer));
 
-// 	lock.l_type = F_UNLCK;
-// 	fcntl(fd, F_SETLK, &lock);
+	u.id = t.id + 1;
+	strcpy(u.details, "ACTIVE");
 
-// 	close(fd);
-// 	return res;
-// }
+	int j = write(fd, &u, sizeof(Customer));
+	if (j != 0)
+		res = true;
+	else
+		res = false;
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+
+	close(fd);
+	return res;
+}
+
+bool deleteCustomer(int ID)
+{
+	int i = ID - 1000;
+	int fd = open("Customer_User", O_RDWR, 0744);
+	bool result;
+
+	int fl1;
+	struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Customer);
+	lock.l_len = sizeof(Customer);
+	lock.l_pid = getpid();
+
+	fl1 = fcntl(fd, F_SETLKW, &lock);
+	// getchar();
+
+	Customer n;
+	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
+	read(fd, &n, sizeof(Customer));
+
+	if (!strcmp(n.details, "ACTIVE"))
+	{
+		strcpy(n.details, "CLOSED");
+
+		lseek(fd, (-1) * sizeof(Customer), SEEK_CUR);
+		int j = write(fd, &n, sizeof(Customer));
+		if (j != 0)
+			result = true;
+		else
+			result = false;
+	}
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+
+	close(fd);
+	return result;
+}
+
+// ! TODO: Check this!
+bool modifyCustomer(Customer n)
+{
+	int i = n.id - 1000;
+	int fd = open("Customer_User", O_RDWR, 0744);
+	bool result = false;
+
+	int fl1;
+	struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Customer);
+	lock.l_len = sizeof(Customer);
+	lock.l_pid = getpid();
+
+	fl1 = fcntl(fd, F_SETLKW, &lock);
+
+	// Read the corresponding customer data entry.
+	Customer t;
+	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
+	read(fd, &t, sizeof(Customer));
+
+	if (!strcmp(t.details, "ACTIVE") && (n.id == t.id))
+	{
+		strcpy(n.details, "ACTIVE");
+		lseek(fd, (-1) * sizeof(Customer), SEEK_CUR);
+		int j = write(fd, &n, sizeof(Customer));
+		if (j != 0)
+			result = true;
+		else
+			result = false;
+	}
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+
+	close(fd);
+	return result;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // bool depositMoney(int account_type, int ID, float amnt)
 // {
@@ -655,229 +639,4 @@ bool alterPassword(int user_type, int ID, char newpass[10])
 // 		break;
 // 	}
 // 	return 0;
-// }
-// bool addNormalUser(normal u)
-// {
-// 	int fd = open("Normal_User", O_RDWR, 0744);
-// 	bool res;
-
-// 	int fl1;
-// 	struct flock lock;
-// 	lock.l_type = F_WRLCK;
-// 	lock.l_whence = SEEK_END;
-// 	lock.l_start = (-1) * sizeof(normal);
-// 	lock.l_len = sizeof(normal);
-// 	lock.l_pid = getpid();
-
-// 	fl1 = fcntl(fd, F_SETLKW, &lock);
-
-// 	normal t;
-// 	lseek(fd, (-1) * sizeof(normal), SEEK_END);
-// 	read(fd, &t, sizeof(normal));
-
-// 	u.id = t.id + 1;
-// 	u.account_number = t.account_number + 1;
-// 	strcpy(u.details, "ACTIVE");
-
-// 	int j = write(fd, &u, sizeof(normal));
-// 	if (j != 0)
-// 		res = true;
-// 	else
-// 		res = false;
-
-// 	lock.l_type = F_UNLCK;
-// 	fcntl(fd, F_SETLK, &lock);
-
-// 	close(fd);
-// 	return res;
-// }
-// bool addJointUser(joint j)
-// {
-// 	int fd = open("Joint_User", O_RDWR, 0744);
-// 	bool result;
-
-// 	int fl1;
-// 	struct flock lock;
-// 	lock.l_type = F_WRLCK;
-// 	lock.l_whence = SEEK_END;
-// 	lock.l_start = (-1) * sizeof(joint);
-// 	lock.l_len = sizeof(joint);
-// 	lock.l_pid = getpid();
-
-// 	fl1 = fcntl(fd, F_SETLKW, &lock);
-
-// 	joint endUser;
-// 	lseek(fd, (-1) * sizeof(joint), SEEK_END);
-// 	read(fd, &endUser, sizeof(joint));
-
-// 	j.id = endUser.id + 1;
-// 	j.account_number = endUser.account_number + 1;
-// 	strcpy(j.details, "ACTIVE");
-
-// 	int k = write(fd, &j, sizeof(joint));
-// 	if (k != 0)
-// 		result = true;
-// 	else
-// 		result = false;
-
-// 	lock.l_type = F_UNLCK;
-// 	fcntl(fd, F_SETLK, &lock);
-
-// 	close(fd);
-// 	return result;
-// }
-// bool deleteNormalUser(int ID)
-// {
-// 	int i = ID - 1000;
-// 	int fd = open("Normal_User", O_RDWR, 0744);
-// 	bool result;
-
-// 	int fl1;
-// 	struct flock lock;
-// 	lock.l_type = F_WRLCK;
-// 	lock.l_whence = SEEK_SET;
-// 	lock.l_start = (i) * sizeof(normal);
-// 	lock.l_len = sizeof(normal);
-// 	lock.l_pid = getpid();
-
-// 	fl1 = fcntl(fd, F_SETLKW, &lock);
-// 	// getchar();
-
-// 	normal n;
-// 	lseek(fd, (i) * sizeof(normal), SEEK_SET);
-// 	read(fd, &n, sizeof(normal));
-
-// 	if (!strcmp(n.details, "ACTIVE"))
-// 	{
-// 		strcpy(n.details, "CLOSED");
-// 		n.balance = 0;
-
-// 		lseek(fd, (-1) * sizeof(normal), SEEK_CUR);
-// 		int j = write(fd, &n, sizeof(normal));
-// 		if (j != 0)
-// 			result = true;
-// 		else
-// 			result = false;
-// 	}
-
-// 	lock.l_type = F_UNLCK;
-// 	fcntl(fd, F_SETLK, &lock);
-
-// 	close(fd);
-// 	return result;
-// }
-
-// bool deleteJointUser(int ID)
-// {
-// 	int i = ID - 1000;
-// 	int fd = open("Joint_User", O_RDWR, 0744);
-// 	bool result;
-
-// 	int fl1;
-// 	struct flock lock;
-// 	lock.l_type = F_WRLCK;
-// 	lock.l_whence = SEEK_SET;
-// 	lock.l_start = (i) * sizeof(joint);
-// 	lock.l_len = sizeof(joint);
-// 	lock.l_pid = getpid();
-
-// 	fl1 = fcntl(fd, F_SETLKW, &lock);
-
-// 	joint j;
-// 	lseek(fd, (i) * sizeof(joint), SEEK_SET);
-// 	read(fd, &j, sizeof(joint));
-
-// 	if (!strcmp(j.details, "ACTIVE"))
-// 	{
-// 		strcpy(j.details, "CLOSED");
-// 		j.balance = 0;
-
-// 		lseek(fd, (-1) * sizeof(joint), SEEK_CUR);
-// 		int k = write(fd, &j, sizeof(joint));
-// 		if (k != 0)
-// 			result = true;
-// 		else
-// 			result = false;
-// 	}
-
-// 	lock.l_type = F_UNLCK;
-// 	fcntl(fd, F_SETLK, &lock);
-
-// 	close(fd);
-// 	return result;
-// }
-// bool modifyNormalUser(normal n)
-// {
-// 	int i = n.id - 1000;
-// 	int fd = open("Normal_User", O_RDWR, 0744);
-// 	bool result = false;
-
-// 	int fl1;
-// 	struct flock lock;
-// 	lock.l_type = F_WRLCK;
-// 	lock.l_whence = SEEK_SET;
-// 	lock.l_start = (i) * sizeof(normal);
-// 	lock.l_len = sizeof(normal);
-// 	lock.l_pid = getpid();
-
-// 	fl1 = fcntl(fd, F_SETLKW, &lock);
-
-// 	normal t;
-// 	lseek(fd, (i) * sizeof(normal), SEEK_SET);
-// 	read(fd, &t, sizeof(normal));
-
-// 	if (!strcmp(t.details, "ACTIVE") && (n.account_number == t.account_number))
-// 	{
-// 		strcpy(n.details, "ACTIVE");
-// 		lseek(fd, (-1) * sizeof(normal), SEEK_CUR);
-// 		int j = write(fd, &n, sizeof(normal));
-// 		if (j != 0)
-// 			result = true;
-// 		else
-// 			result = false;
-// 	}
-
-// 	lock.l_type = F_UNLCK;
-// 	fcntl(fd, F_SETLK, &lock);
-
-// 	close(fd);
-// 	return result;
-// }
-
-// bool modifyJointUser(joint j)
-// {
-// 	int i = j.id - 1000;
-// 	int fd = open("Joint_User", O_RDWR, 0744);
-// 	bool result = false;
-
-// 	int fl1;
-// 	struct flock lock;
-// 	lock.l_type = F_WRLCK;
-// 	lock.l_whence = SEEK_SET;
-// 	lock.l_start = (i) * sizeof(joint);
-// 	lock.l_len = sizeof(joint);
-// 	lock.l_pid = getpid();
-
-// 	fl1 = fcntl(fd, F_SETLKW, &lock);
-
-// 	joint t;
-// 	lseek(fd, (i) * sizeof(joint), SEEK_SET);
-// 	read(fd, &t, sizeof(joint));
-
-// 	if (!strcmp(t.details, "ACTIVE") && (j.account_number == t.account_number))
-// 	{
-// 		strcpy(j.details, "ACTIVE");
-// 		lseek(fd, (-1) * sizeof(joint), SEEK_CUR);
-// 		int k = write(fd, &j, sizeof(joint));
-// 		if (k != 0)
-// 			result = true;
-// 		else
-// 			result = false;
-// 	}
-
-// 	lock.l_type = F_UNLCK;
-// 	fcntl(fd, F_SETLK, &lock);
-
-// 	close(fd);
-// 	return result;
 // }

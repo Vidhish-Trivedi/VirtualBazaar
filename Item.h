@@ -18,5 +18,5 @@ typedef struct Product{
 typedef struct Order{
     int order_id;
     int customer_id;
-    struct Product cart[25];
+    Product cart[25];
 } Order;
