@@ -52,11 +52,11 @@ bool alterPass(int acc_type, int ID, char newPwd[10]);
 
 // Admin actions.
 bool addCustomer(Customer r);
-bool deleteCustomer(int ID);
+bool deleteCustomer(int customer_id);
 bool modifyCustomer(Customer n);
 bool addProduct(Product product);
 bool deleteProduct(int product_id);
-bool updateProduct(Product product);		// set field to -1 when you don't want to update it.
+bool modifyProduct(Product product);		// set field to -1 when you don't want to update it.
 bool generateLog();
 
 // Miscellaneous.

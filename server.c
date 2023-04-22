@@ -338,6 +338,41 @@ bool addCustomer(Customer u)
 	return res;
 }
 
+bool addProduct(Product p)
+{
+	int fd = open("Product_List", O_RDWR, 0744);
+	bool res;
+
+	int fl1;
+	struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_END;
+	lock.l_start = (-1) * sizeof(Product);
+	lock.l_len = sizeof(Product);
+	lock.l_pid = getpid();
+
+	fl1 = fcntl(fd, F_SETLKW, &lock);
+
+	// Read the last product data entry.
+	Product t;
+	lseek(fd, (-1) * sizeof(Product), SEEK_END);
+	read(fd, &t, sizeof(Product));
+
+	p.id = t.id + 1;
+
+	int j = write(fd, &p, sizeof(Product));
+	if (j != 0)
+		res = true;
+	else
+		res = false;
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+
+	close(fd);
+	return res;
+}
+
 bool deleteCustomer(int ID)
 {
 	int i = ID - 1000;
@@ -378,6 +413,42 @@ bool deleteCustomer(int ID)
 	return result;
 }
 
+bool deleteProduct(int ID) // Set quantity to negative.
+{
+	int i = ID;
+	int fd = open("Product_List", O_RDWR, 0744);
+	bool result;
+
+	int fl1;
+	struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Product);
+	lock.l_len = sizeof(Product);
+	lock.l_pid = getpid();
+
+	fl1 = fcntl(fd, F_SETLKW, &lock);
+	// getchar();
+
+	Product n;
+	lseek(fd, (i) * sizeof(Product), SEEK_SET);
+	read(fd, &n, sizeof(Product));
+
+	n.quantity = -10;
+	lseek(fd, (-1) * sizeof(Product), SEEK_CUR);
+	int j = write(fd, &n, sizeof(Product));
+	if (j != 0)
+		result = true;
+	else
+		result = false;
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+
+	close(fd);
+	return result;
+}
+
 // ! TODO: Check this!
 bool modifyCustomer(Customer n)
 {
@@ -410,6 +481,45 @@ bool modifyCustomer(Customer n)
 		else
 			result = false;
 	}
+
+	lock.l_type = F_UNLCK;
+	fcntl(fd, F_SETLK, &lock);
+
+	close(fd);
+	return result;
+}
+
+bool modifyProduct(Product n)
+{
+	int i = n.id;
+	int fd = open("Product_List", O_RDWR, 0744);
+	bool result = false;
+
+	int fl1;
+	struct flock lock;
+	lock.l_type = F_WRLCK;
+	lock.l_whence = SEEK_SET;
+	lock.l_start = (i) * sizeof(Product);
+	lock.l_len = sizeof(Product);
+	lock.l_pid = getpid();
+
+	fl1 = fcntl(fd, F_SETLKW, &lock);
+
+	// Read the corresponding product data entry.
+	Product t;
+	lseek(fd, (i) * sizeof(Product), SEEK_SET);
+	read(fd, &t, sizeof(Product));
+
+	// Set new price, quantity.
+	t.price = n.price;
+	t.quantity = n.quantity;
+
+	lseek(fd, (-1) * sizeof(Customer), SEEK_CUR);
+	int j = write(fd, &n, sizeof(Customer));
+	if (j != 0)
+		result = true;
+	else
+		result = false;
 
 	lock.l_type = F_UNLCK;
 	fcntl(fd, F_SETLK, &lock);

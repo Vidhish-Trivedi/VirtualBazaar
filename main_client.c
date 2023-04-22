@@ -59,7 +59,7 @@ int main()
                     write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
                     for (int idx = 0; idx < 100; idx++)
                     {
-                        if (product_array[idx].id != 0)
+                        if (product_array[idx].id != 0 && product_array[idx].quantity >= 0)
                         {
                             break;
                         }
