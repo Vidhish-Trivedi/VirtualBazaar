@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <arpa/inet.h>
+#include "my_macros.h"
 
 #include "Order.h"
 
@@ -28,7 +29,7 @@ typedef struct Customer
 {
 	int id;
 	char name[30];
-	char password[10];
+	char password[15];
 	Product cart[25];
 	char details[50];
 } Customer;
@@ -46,12 +47,12 @@ typedef struct Admin
 Product* getAllProducts(Product p_arr[]);
 Product getProductById(int product_id);
 Product* getCartByCustomer(int customer_id);
-bool addProductToCart(int product_id, int customer_id, int quantity);
-bool updateProductInCart(int customer_id, Product product);		// 0 on success.
+Product addProductToCart(int product_id, int customer_id, int quantity);
+Product updateProductInCart(int customer_id, Product product);		// 0 on success.
 
 // Admin actions.
-bool addCustomer(Customer r);
-bool addProduct(Product product);
+Customer addCustomer(Customer r);
+Product addProduct(Product product);
 Product deleteProduct(int product_id);
 Product modifyProduct(Product product);		// set field to -1 when you don't want to update it.
 // bool generateLog();

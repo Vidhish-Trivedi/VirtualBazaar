@@ -3,7 +3,6 @@
 */
 
 #include "server.h"
-// #include "Cart.h"
 
 // Server side CRUD operations which works analogous to Client side information.
 // Check whether file is present or not and take necessary action (locking and unlocking)
@@ -13,7 +12,6 @@
 void server(int nsd)
 {
 	int msgLength, select, type, option, currUserID;
-	bool result;
 	Query q;
 
 	// Handling requests.
@@ -26,16 +24,15 @@ void server(int nsd)
 			read(nsd, &q, sizeof(Query));
 			if (q.query_num == 1)
 			{
-				Product *p_arr = malloc(sizeof(Product) * 30);
-				// printf("ok1\n");
+				Product *p_arr = malloc(sizeof(Product) * MAX_PRODUCTS);
 				p_arr = getAllProducts(p_arr);
-				// printf("ok2\n");
-				write(nsd, p_arr, sizeof(Product) * 30);
+				write(nsd, p_arr, sizeof(Product) * MAX_PRODUCTS);
 			}
 			else if (q.query_num == 2)
 			{
-				Product *p_arr = malloc(sizeof(Product) * 25);
+				Product *p_arr = malloc(sizeof(Product) * MAX_CART_SIZE);
 				p_arr = getCartByCustomer(q.user_id);
+				write(nsd, p_arr, sizeof(Product) * MAX_CART_SIZE);
 			}
 		}
 		else if (type == 2) // Admin
@@ -44,8 +41,9 @@ void server(int nsd)
 
 			if (q.query_num == 1) // Add
 			{
+				Product result;
 				result = addProduct(q.product);
-				write(nsd, &result, sizeof(result));
+				write(nsd, &result, sizeof(Product));
 			}
 			else if (q.query_num == 2) // Delete
 			{
@@ -68,6 +66,8 @@ void server(int nsd)
 	write(1, "Ended client session.....\n", sizeof("Ended client session.....\n"));
 	return;
 }
+
+// ! TODO: check flow --> add product(admin), list all(customer)  --> maybe socket buffer ?;
 
 void *connection(void *nsd)
 {
@@ -120,7 +120,8 @@ Customer getCustomer(int ID)
 	return c;
 }
 
-bool addCustomer(Customer u)
+// TODO
+Customer addCustomer(Customer u)
 {
 	int fd = open("Customer_User", O_RDWR);
 	bool res;
@@ -153,10 +154,10 @@ bool addCustomer(Customer u)
 	fcntl(fd, F_SETLK, &lock);
 
 	close(fd);
-	return res;
+	// return res;
 }
 
-bool addProduct(Product p)
+Product addProduct(Product p)
 {
 	int fd = open("Product_List", O_RDWR);
 	lseek(fd, 0, SEEK_SET);
@@ -195,7 +196,13 @@ bool addProduct(Product p)
 	fcntl(fd, F_SETLK, &lock);
 
 	close(fd);
-	return res;
+	if(res){
+		return(p);
+	}
+	else{
+		p.id = -1;
+		return(p);
+	}
 }
 
 Product deleteProduct(int ID) // Set quantity to negative.
@@ -311,7 +318,8 @@ Product modifyProduct(Product n)
 	}
 }
 
-bool addProductToCart(int product_id, int ID, int quantity)
+// TODO
+Product addProductToCart(int product_id, int ID, int quantity)
 {
 	int i = ID;
 	bool result;
@@ -340,7 +348,7 @@ bool addProductToCart(int product_id, int ID, int quantity)
 	fcntl(fd, F_SETLK, &lock);
 
 	close(fd);
-	return result;
+	// return result;
 }
 
 Product getProductById(int ID)
@@ -455,15 +463,17 @@ Product *getCartByCustomer(int ID)
 	return (c.cart);
 }
 
-bool updateProductInCart(int ID, Product product)
+//  ! TODO
+Product updateProductInCart(int ID, Product product)
 {
-	int i = ID - 1000;
+	int i = ID - 1;
 	bool result;
 	result = false;
 	int fl1;
 	int fd;
 
 	fd = open("Customer_User", O_RDWR, 0777);
+	lseek(fd, 0, SEEK_SET);
 
 	struct flock lock;
 	lock.l_type = F_WRLCK;
@@ -485,7 +495,7 @@ bool updateProductInCart(int ID, Product product)
 
 	close(fd);
 
-	return (result);
+	return (product);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////

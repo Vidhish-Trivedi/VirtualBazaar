@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "Order.h"
+#include "my_macros.h"
 
 typedef struct Query
 {
@@ -60,13 +61,13 @@ int main()
                 write(sckfd, &option, sizeof(option));
                 if (option == 1) // List all products.
                 {
-                    Product product_array[30];
-                    read(sckfd, product_array, sizeof(product_array));
+                    Product product_array[MAX_PRODUCTS];
+                    read(sckfd, product_array, sizeof(Product)*MAX_PRODUCTS);
                     write(1, "--------------------------------------------------------------------\n", sizeof("--------------------------------------------------------------------\n"));
                     write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
-                    for (int idx = 0; idx < 30; idx++)
+                    for (int idx = 0; idx < MAX_PRODUCTS; idx++)
                     {
-                        if (product_array[idx].id != -1 && product_array[idx].quantity >= 0)
+                        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity >= 0)
                         {
                             printf("%3d\t %20s\t %5d\t   %4d\n", product_array[idx].id, product_array[idx].name, product_array[idx].quantity, product_array[idx].price); // For formatting.
                         }
@@ -74,13 +75,13 @@ int main()
                 }
                 else if (option == 2) // List products in cart
                 {
-                    Product product_array[25];
-                    read(sckfd, product_array, sizeof(product_array));
+                    Product product_array[MAX_CART_SIZE];
+                    read(sckfd, product_array, sizeof(Product)*MAX_CART_SIZE);
                     write(1, "--------------------------------------------------------------------\n", sizeof("--------------------------------------------------------------------\n"));
                     write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
                     for (int idx = 0; idx < 25; idx++)
                     {
-                        if (product_array[idx].id != -1 && product_array[idx].quantity >= 0)
+                        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity >= 0)
                         {
                             printf("%3d\t %20s\t %5d\t   %4d\n", product_array[idx].id, product_array[idx].name, product_array[idx].quantity, product_array[idx].price); // For formatting.
                         }
@@ -134,11 +135,11 @@ int main()
 
                     write(sckfd, &q, sizeof(Query));
 
-                    bool res;
-                    read(sckfd, &res, sizeof(bool));
-                    if (res)
+                    Product res;
+                    read(sckfd, &res, sizeof(Product));
+                    if (res.id > 0)
                     {
-                        write(1, "Added product\n", sizeof("Added product\n"));
+                        printf("Added product with Id: %d\n", res.id);
                     }
                     else
                     {
