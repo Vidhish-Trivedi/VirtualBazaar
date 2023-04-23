@@ -52,8 +52,8 @@ bool updateProductInCart(int customer_id, Product product);		// 0 on success.
 // Admin actions.
 bool addCustomer(Customer r);
 bool addProduct(Product product);
-bool deleteProduct(int product_id);
-bool modifyProduct(Product product);		// set field to -1 when you don't want to update it.
+Product deleteProduct(int product_id);
+Product modifyProduct(Product product);		// set field to -1 when you don't want to update it.
 // bool generateLog();
 
 // Miscellaneous.

@@ -53,7 +53,7 @@ int main()
                 write(1, "1.) List all products\n", sizeof("1.) List all products\n"));
                 write(1, "2.) List products in cart\n", sizeof("2.) List products in cart\n"));
                 write(1, "3.) Add to cart\n", sizeof("3.) Add to cart\n"));
-                write(1, "4.) Update cart\n", sizeof("4.) Update cart\n"));
+                write(1, "4.) Update cart\n", sizeof("4.) Update cart\n")); // set updated quantity to -1 to remove.
                 write(1, "5.) Exit\n", sizeof("5.) Exit\n"));
 
                 scanf("%d", &option);
@@ -66,8 +66,9 @@ int main()
                     write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
                     for (int idx = 0; idx < 30; idx++)
                     {
-                        if(product_array[idx].id != -1){
-                            printf("%3d\t %20s\t %5d\t %4d\n", product_array[idx].id, product_array[idx].name, product_array[idx].quantity, product_array[idx].price); // For formatting.
+                        if (product_array[idx].id != -1 && product_array[idx].quantity >= 0)
+                        {
+                            printf("%3d\t %20s\t %5d\t   %4d\n", product_array[idx].id, product_array[idx].name, product_array[idx].quantity, product_array[idx].price); // For formatting.
                         }
                     }
                 }
@@ -127,36 +128,65 @@ int main()
                     if (res)
                     {
                         write(1, "Added product\n", sizeof("Added product\n"));
-                        Product r_p;
-                        write(1, "ok\n", sizeof("ok\n"));
-                        read(sckfd, &r_p, sizeof(Product));
-                        printf("%d,\t%s,\t%d,\t%d\n", r_p.id, r_p.name, r_p.price, r_p.quantity);
                     }
                     else
                     {
-                        write(1, "Try again!\n", sizeof("Try again!\n"));
+                        write(1, "Add unsuccessful... try again!\n", sizeof("Add unsuccessful... try again!\n"));
                     }
                 }
                 else if (option == 2) // Delete a product
                 {
-                    Product p = {1, "mobile", 100, 20};
+                    int a;
+
+                    write(1, "Enter p_id of product to delete:\n", sizeof("Enter p_id of product to delete:\n"));
+                    scanf("%d", &a);
+
+                    Product p;
+                    p.id = a;
 
                     Query q = {2, 2, p};
                     write(sckfd, &q, sizeof(Query));
 
                     bool res;
-                    read(sckfd, &res, sizeof(bool));
-                    if (res)
+                    read(sckfd, &p, sizeof(Product));
+                    if (p.id > 0)
                     {
-                        write(1, "Deleted product\n", sizeof("Deleted product\n"));
+                        printf("Deleted product %s, with Id: %d\n", p.name, p.id);
                     }
                     else
                     {
-                        write(1, "Try again!\n", sizeof("Try again!\n"));
+                        write(1, "Delete unsuccessful... try again!\n", sizeof("Delete unsuccessful... try again!\n"));
                     }
                 }
                 else if (option == 3) // Update product details.
                 {
+                    int a, b, c;
+
+                    write(1, "Enter p_id of product to update:\n", sizeof("Enter p_id of product to update:\n"));
+                    scanf("%d", &a);
+                    write(1, "Enter new price(enter -1 for no change):\n", sizeof("Enter new price(enter -1 for no change):\n"));
+                    scanf("%d", &b);
+                    write(1, "Enter new quantity(enter -1 for no change):\n", sizeof("Enter new quantity(enter -1 for no change):\n"));
+                    scanf("%d", &c);
+
+                    Product p;
+                    p.id = a;
+                    p.price = b;
+                    p.quantity = c;
+
+                    Query q = {3, 2, p};
+                    write(sckfd, &q, sizeof(Query));
+
+                    bool res;
+                    read(sckfd, &p, sizeof(Product));
+                    if (p.id > 0)
+                    {
+                        printf("Updted product %s, with Id: %d\nNew price: %d, new quantity: %d\n", p.name, p.id, p.price, p.quantity);
+                    }
+                    else
+                    {
+                        write(1, "Update unsuccessful... try again!\n", sizeof("Update unsuccessful... try again!\n"));
+                    }
                 }
                 else if (option == 4) // Exit, generate product stock log.
                 {
