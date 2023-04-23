@@ -196,66 +196,71 @@ Product addProduct(Product p)
 	fcntl(fd, F_SETLK, &lock);
 
 	close(fd);
-	if(res){
-		return(p);
+	if (res)
+	{
+		return (p);
 	}
-	else{
+	else
+	{
 		p.id = -1;
-		return(p);
+		return (p);
 	}
 }
 
 Product deleteProduct(int ID) // Set quantity to negative.
 {
-	bool result;
-	result = false;
 	int i = ID - 1;
-	printf("i: %d\n", i);
-	Product p;
-	p.id = -1;
-	strcpy(p.name, "==");
-	p.price = -1;
-	p.quantity = -1;
-
-	int j = -1;
-
 	int fd = open(PRODUCT_FILE, O_RDWR);
-
 	lseek(fd, 0, SEEK_SET);
-	int l1;
-	struct flock lock;
+	bool result = false;
 
-	lock.l_type = F_RDLCK;
+	int fl1;
+	struct flock lock;
+	lock.l_type = F_WRLCK;
 	lock.l_whence = SEEK_SET;
-	lock.l_start = 0;
-	lock.l_len = 0;
+	lock.l_start = (i) * sizeof(Product);
+	lock.l_len = sizeof(Product);
 	lock.l_pid = getpid();
 
-	l1 = fcntl(fd, F_SETLKW, &lock);
-	lseek(fd, i * sizeof(Product), SEEK_SET);
+	fl1 = fcntl(fd, F_SETLKW, &lock);
 
+	// Read the corresponding product data entry.
 	Product t;
+	lseek(fd, (i) * sizeof(Product), SEEK_SET);
 	read(fd, &t, sizeof(Product));
 
-	// printf("t.id: %d\n", t.id);
+	Product empty_product;
+	empty_product.id = -1;
+	empty_product.price = -1;
+	empty_product.quantity = -10;
 
 	if (t.id == ID)
 	{
-		p.id = t.id;
-		strcpy(p.name, t.name);
-		p.price = t.price;
-		p.quantity = t.quantity;
-
-		t.quantity = -10;
-		lseek(fd, 0, SEEK_SET);
-		lseek(fd, i * sizeof(Product), SEEK_SET);
-		j = write(fd, &t, sizeof(Product));
+		// t.quantity = -10;
+		strcpy(empty_product.name, "deleted");
+		
+		lseek(fd, (-1) * sizeof(Product), SEEK_CUR);
+		int j = write(fd, &empty_product, sizeof(Product));
+		
+		if (j != 0)
+			result = true;
+		else
+			result = false;
 	}
 
 	lock.l_type = F_UNLCK;
 	fcntl(fd, F_SETLK, &lock);
+
 	close(fd);
-	return (p);
+	strcpy(empty_product.name, "==");
+	if (result)
+	{
+		return (t);
+	}
+	else
+	{
+		return (empty_product);
+	}
 }
 
 Product modifyProduct(Product n)
@@ -351,6 +356,7 @@ Product addProductToCart(int product_id, int ID, int quantity)
 	// return result;
 }
 
+// Can remove locking in below function.
 Product getProductById(int ID)
 {
 	int i = ID - 1;
@@ -387,6 +393,7 @@ Product getProductById(int ID)
 	return p;
 }
 
+// Can do mandatory locking in below function.
 Product *getAllProducts(Product p_arr[])
 {
 	// Product *p_arr = malloc(sizeof(Product) * 30);
