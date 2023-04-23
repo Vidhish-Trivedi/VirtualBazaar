@@ -21,7 +21,6 @@ typedef struct Query
     int query_num;
     int user_type;
     Product product;
-    Order order;
 } Query;
 
 int main()
@@ -31,8 +30,13 @@ int main()
     sckfd = socket(AF_INET, SOCK_STREAM, 0);
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = inet_addr("127.0.0.1");
-    server.sin_port = htons(5000);
+    server.sin_port = htons(8080);
     connect(sckfd, (struct sockaddr *)&server, sizeof(server));
+    Product prod_ref;
+    prod_ref.id = -1;
+    strcpy(prod_ref.name, "==");
+    prod_ref.price = -1;
+    prod_ref.quantity = -1;
 
     int userType = -1;
     while (userType <= 0)
@@ -58,10 +62,11 @@ int main()
                 write(1, "5.) Exit\n", sizeof("5.) Exit\n"));
 
                 scanf("%d", &option);
-                write(sckfd, &option, sizeof(option));
                 if (option == 1) // List all products.
                 {
                     Product product_array[MAX_PRODUCTS];
+                    Query q = {option, 1, prod_ref};
+                    write(sckfd, &q, sizeof(Query));
                     read(sckfd, product_array, sizeof(Product) * MAX_PRODUCTS);
                     write(1, "--------------------------------------------------------------------\n", sizeof("--------------------------------------------------------------------\n"));
                     write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
@@ -76,6 +81,8 @@ int main()
                 else if (option == 2) // List products in cart
                 {
                     Product product_array[MAX_CART_SIZE];
+                    Query q = {option, 1, prod_ref};
+                    write(sckfd, &q, sizeof(Query));
                     read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
                     write(1, "--------------------------------------------------------------------\n", sizeof("--------------------------------------------------------------------\n"));
                     write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
@@ -119,11 +126,15 @@ int main()
                 }
                 else if (option == 5) // Exit
                 {
+                    Query q = {-1, -1, prod_ref};
+                    write(sckfd, &q, sizeof(Query));
                     userType = -1;
                     break;
                 }
                 else
                 {
+                    Query q = {-1, -1, prod_ref};
+                    write(sckfd, &q, sizeof(Query));
                     write(1, "Invalid Choice... Try again!\n", sizeof("Invalid Choice... Try again!\n"));
                 }
             }
@@ -156,7 +167,7 @@ int main()
                     p.price = b;
                     p.quantity = c;
 
-                    Query q = {1, 2, p};
+                    Query q = {1, 1, p};
 
                     write(sckfd, &q, sizeof(Query));
 
@@ -228,11 +239,15 @@ int main()
                 else if (option == 4) // Exit, generate product stock log.
                 {
                     // ! TODO: Generate log file.
+                    Query q = {-1, -1, prod_ref};
+                    write(sckfd, &q, sizeof(Query));
                     userType = -1;
                     break;
                 }
                 else
                 {
+                    Query q = {-1, -1, prod_ref};
+                    write(sckfd, &q, sizeof(Query));
                     write(1, "Invalid Choice... Try again!\n", sizeof("Invalid Choice... Try again!\n"));
                 }
             }

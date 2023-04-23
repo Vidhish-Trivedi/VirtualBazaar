@@ -25,7 +25,7 @@ int main()
 	// Keeping localhost as the server address , same as client for demo purpose
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = inet_addr("127.0.0.1");
-	server.sin_port = htons(5000);
+	server.sin_port = htons(8080);
 
 	// server setup steps followed as shown in class
 	bind(sd, (struct sockaddr *)&server, sizeof(server));

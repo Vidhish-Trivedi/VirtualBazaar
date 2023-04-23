@@ -21,22 +21,25 @@ void server(int nsd)
 
 		if (type == 1)
 		{
+			printf("...customer...\n");
 			read(nsd, &q, sizeof(Query));
 			if (q.query_num == 1)
 			{
+				printf("in 1,1\n");
 				Product *p_arr = malloc(sizeof(Product) * MAX_PRODUCTS);
 				p_arr = getAllProducts(p_arr);
 				write(nsd, p_arr, sizeof(Product) * MAX_PRODUCTS);
 			}
 			else if (q.query_num == 2)
 			{
+				printf("in 1,2\n");
 				Product *p_arr = malloc(sizeof(Product) * MAX_CART_SIZE);
-				p_arr = getCartByCustomer(q.user_id);
+				p_arr = getCartByCustomer(q.user_id, p_arr);
 				write(nsd, p_arr, sizeof(Product) * MAX_CART_SIZE);
 			}
 			else if (q.query_num == 3)
 			{
-				read(nsd, &q, sizeof(Query));
+				printf("in 1,3\n");
 				Product p;
 				printf("%d,:: %d\n", q.product.id, q.user_id);
 				p = addProductToCart(q.product, q.user_id);
@@ -45,22 +48,26 @@ void server(int nsd)
 		}
 		else if (type == 2) // Admin
 		{
+			printf("...admin...\n");
 			read(nsd, &q, sizeof(Query));
 
 			if (q.query_num == 1) // Add
 			{
+				printf("in 2,1\n");
 				Product result;
 				result = addProduct(q.product);
 				write(nsd, &result, sizeof(Product));
 			}
 			else if (q.query_num == 2) // Delete
 			{
+				printf("in 2,2\n");
 				Product p;
 				p = deleteProduct(q.product.id);
 				write(nsd, &p, sizeof(Product));
 			}
 			else if (q.query_num == 3) // Update
 			{
+				printf("in 2,3\n");
 				Product p;
 				p = modifyProduct(q.product);
 				write(nsd, &p, sizeof(Product));
@@ -339,7 +346,7 @@ Product addProductToCart(Product product, int ID)
 	result = false;
 	int fl1;
 	int fd;
-	printf("%d, %d\n", product.id, product.quantity);
+
 	int quant = product.quantity;
 	product = getProductById(product.id);
 	int cnt = 0;
@@ -347,10 +354,11 @@ Product addProductToCart(Product product, int ID)
 	fd = open(CUSTOMER_FILE, O_RDWR);
 	lseek(fd, 0, SEEK_SET);
 
-	printf("product q: %d\n", product.quantity);
 
 	if (quant <= product.quantity)
 	{
+		product.quantity = quant;
+		
 		struct flock lock;
 		lock.l_type = F_WRLCK;
 		lock.l_whence = SEEK_SET;
@@ -369,7 +377,6 @@ Product addProductToCart(Product product, int ID)
 
 		for (int k = 0; k < MAX_CART_SIZE; k++)
 		{
-			printf("----//%d\n", c.cart[k].quantity);
 			if (c.cart[k].quantity <= 0)
 			{
 				c.cart[k] = product;
@@ -480,7 +487,7 @@ Product *getAllProducts(Product p_arr[])
 	return (p_arr);
 }
 
-Product *getCartByCustomer(int ID)
+Product *getCartByCustomer(int ID, Product p_arr[])
 {
 	int i = ID;
 	bool result;
@@ -510,7 +517,11 @@ Product *getCartByCustomer(int ID)
 
 	close(fd);
 
-	return (c.cart);
+	for(int k = 0; k < MAX_CART_SIZE; k++){
+		p_arr[k] = c.cart[k];
+	}
+
+	return (p_arr);
 }
 
 //  ! TODO
