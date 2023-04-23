@@ -74,6 +74,17 @@ int main()
                 }
                 else if (option == 2) // List products in cart
                 {
+                    Product product_array[25];
+                    read(sckfd, product_array, sizeof(product_array));
+                    write(1, "--------------------------------------------------------------------\n", sizeof("--------------------------------------------------------------------\n"));
+                    write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
+                    for (int idx = 0; idx < 25; idx++)
+                    {
+                        if (product_array[idx].id != -1 && product_array[idx].quantity >= 0)
+                        {
+                            printf("%3d\t %20s\t %5d\t   %4d\n", product_array[idx].id, product_array[idx].name, product_array[idx].quantity, product_array[idx].price); // For formatting.
+                        }
+                    }
                 }
                 else if (option == 3) // Add to cart (pid, quantity)
                 {
@@ -181,7 +192,7 @@ int main()
                     read(sckfd, &p, sizeof(Product));
                     if (p.id > 0)
                     {
-                        printf("Updted product %s, with Id: %d\nNew price: %d, new quantity: %d\n", p.name, p.id, p.price, p.quantity);
+                        printf("Updated product %s, with Id: %d\nNew price: %d, new quantity: %d\n", p.name, p.id, p.price, p.quantity);
                     }
                     else
                     {
@@ -191,6 +202,7 @@ int main()
                 else if (option == 4) // Exit, generate product stock log.
                 {
                     // ! TODO: Generate log file.
+                    userType = -1;
                     break;
                 }
                 else
@@ -203,8 +215,7 @@ int main()
         {
             // Exit application
             write(1, "Bye Bye!\n", sizeof("Bye Bye!\n"));
-            close(sckfd);
-            exit(0);
+            break;
         }
         else
         {

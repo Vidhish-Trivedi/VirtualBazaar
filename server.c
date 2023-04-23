@@ -20,7 +20,6 @@ void server(int nsd)
 	while (1)
 	{
 		read(nsd, &type, sizeof(type));
-		// printf("userType : %d\n", type);
 
 		if (type == 1)
 		{
@@ -28,10 +27,15 @@ void server(int nsd)
 			if (q.query_num == 1)
 			{
 				Product *p_arr = malloc(sizeof(Product) * 30);
-				printf("ok1\n");
+				// printf("ok1\n");
 				p_arr = getAllProducts(p_arr);
-				printf("ok2\n");
+				// printf("ok2\n");
 				write(nsd, p_arr, sizeof(Product) * 30);
+			}
+			else if (q.query_num == 2)
+			{
+				Product *p_arr = malloc(sizeof(Product) * 25);
+				p_arr = getCartByCustomer(q.user_id);
 			}
 		}
 		else if (type == 2) // Admin
@@ -57,7 +61,6 @@ void server(int nsd)
 			}
 			else if (q.query_num == 4)
 			{
-				
 			}
 		}
 	}
@@ -201,8 +204,16 @@ Product deleteProduct(int ID) // Set quantity to negative.
 	result = false;
 	int i = ID - 1;
 	printf("i: %d\n", i);
-	Product p = {-1, "==", -1, -1};
+	Product p;
+	p.id = -1;
+	strcpy(p.name, "==");
+	p.price = -1;
+	p.quantity = -1;
+
+	int j = -1;
+
 	int fd = open("Product_List", O_RDWR);
+
 	lseek(fd, 0, SEEK_SET);
 	int l1;
 	struct flock lock;
@@ -212,15 +223,16 @@ Product deleteProduct(int ID) // Set quantity to negative.
 	lock.l_start = 0;
 	lock.l_len = 0;
 	lock.l_pid = getpid();
-	printf("1\n");
+
 	l1 = fcntl(fd, F_SETLKW, &lock);
 	lseek(fd, i * sizeof(Product), SEEK_SET);
-	printf("2\n");
-	int ret;
-	Product t;
-	ret = read(fd, &t, sizeof(Product));
 
-	if (t.id == p.id)
+	Product t;
+	read(fd, &t, sizeof(Product));
+
+	// printf("t.id: %d\n", t.id);
+
+	if (t.id == ID)
 	{
 		p.id = t.id;
 		strcpy(p.name, t.name);
@@ -230,7 +242,6 @@ Product deleteProduct(int ID) // Set quantity to negative.
 		t.quantity = -10;
 		lseek(fd, 0, SEEK_SET);
 		lseek(fd, i * sizeof(Product), SEEK_SET);
-		int j = -1;
 		j = write(fd, &t, sizeof(Product));
 	}
 
@@ -375,6 +386,7 @@ Product *getAllProducts(Product p_arr[])
 	Product p;
 
 	int fd = open("Product_List", O_RDONLY);
+	lseek(fd, 0, SEEK_SET);
 	// printf("fd %d\n",fd);
 	// int l1;
 	// struct flock lock;
@@ -412,25 +424,25 @@ Product *getAllProducts(Product p_arr[])
 
 Product *getCartByCustomer(int ID)
 {
-	int i = ID - 1000;
+	int i = ID;
 	bool result;
 	result = false;
 	int fl1;
 	int fd;
 
-	fd = open("Customer_User", O_RDWR, 0777);
+	fd = open("Customer_User", O_RDWR);
 
 	struct flock lock;
 	lock.l_type = F_WRLCK;
 	lock.l_whence = SEEK_SET;
-	lock.l_start = (i) * sizeof(Customer);
+	lock.l_start = (i - 1) * sizeof(Customer);
 	lock.l_len = sizeof(Customer);
 	lock.l_pid = getpid();
 
 	fl1 = fcntl(fd, F_SETLKW, &lock);
 
 	Customer c;
-	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
+	lseek(fd, (i - 1) * sizeof(Customer), SEEK_SET);
 	read(fd, &c, sizeof(Customer));
 
 	lock.l_type = F_UNLCK;
@@ -439,6 +451,8 @@ Product *getCartByCustomer(int ID)
 	// ! TODO: Finish this.
 
 	close(fd);
+
+	return (c.cart);
 }
 
 bool updateProductInCart(int ID, Product product)

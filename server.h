@@ -19,7 +19,7 @@
 typedef struct Query
 {
 	int query_num;
-	int user_type;
+	int user_id;
 	Product product;
 } Query;
 
@@ -38,7 +38,7 @@ typedef struct Admin
 {
 	int id;
 	char uname[30];
-	char password[10];
+	char password[15];
 
 } Admin;
 
