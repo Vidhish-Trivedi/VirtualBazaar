@@ -13,8 +13,8 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
-#include "Order.h"
-#include "my_macros.h"
+#include "./../header/Order.h"
+#include "./../header/my_macros.h"
 
 typedef struct Query
 {

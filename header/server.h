@@ -17,6 +17,8 @@
 
 #include "Order.h"
 
+#ifndef SERVER_H
+
 typedef struct Query
 {
 	int query_num;
@@ -64,3 +66,6 @@ Admin getAdmin(int ID);
 // Utils for connection.
 void server(int new_sd);
 void *connection(void *nsd);
+
+#endif
+

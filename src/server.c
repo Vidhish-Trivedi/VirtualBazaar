@@ -2,7 +2,7 @@
    Project made as part of Operating Systems course at IIIT-Bangalore.
 */
 
-#include "server.h"
+#include "./../header/server.h"
 
 // Server side CRUD operations which works analogous to Client side information.
 // Check whether file is present or not and take necessary action (locking and unlocking)

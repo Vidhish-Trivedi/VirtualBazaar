@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <arpa/inet.h>
-#include "server.h"
+#include "./../header/server.h"
 
 int main()
 {

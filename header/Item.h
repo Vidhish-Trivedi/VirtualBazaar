@@ -6,6 +6,8 @@
 
 # include <stdio.h>
 
+#ifndef ITEM_H
+
 // Struct for product.
 typedef struct Product{
     int id;
@@ -13,3 +15,5 @@ typedef struct Product{
     int price;
     int quantity;
 } Product;
+
+#endif
