@@ -62,7 +62,7 @@ int main()
                 if (option == 1) // List all products.
                 {
                     Product product_array[MAX_PRODUCTS];
-                    read(sckfd, product_array, sizeof(Product)*MAX_PRODUCTS);
+                    read(sckfd, product_array, sizeof(Product) * MAX_PRODUCTS);
                     write(1, "--------------------------------------------------------------------\n", sizeof("--------------------------------------------------------------------\n"));
                     write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
                     for (int idx = 0; idx < MAX_PRODUCTS; idx++)
@@ -76,7 +76,7 @@ int main()
                 else if (option == 2) // List products in cart
                 {
                     Product product_array[MAX_CART_SIZE];
-                    read(sckfd, product_array, sizeof(Product)*MAX_CART_SIZE);
+                    read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
                     write(1, "--------------------------------------------------------------------\n", sizeof("--------------------------------------------------------------------\n"));
                     write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
                     for (int idx = 0; idx < 25; idx++)
@@ -89,12 +89,37 @@ int main()
                 }
                 else if (option == 3) // Add to cart (pid, quantity)
                 {
+                    write(1, "Enter p_id, quantity of product to add to cart as space-separated values:\n", sizeof("Enter p_id, quantity of product to add to cart as space-separated values:\n"));
+                    int a, b;
+                    scanf("%d %d", &a, &b);
+                    Product p;
+                    p.id = a;
+                    p.quantity = b;
+                    strcpy(p.name, "==");
+                    p.price = -1;
+
+                    // Set user_id to query here.
+
+                    Query q = {3, 1, p};
+                    write(sckfd, &q, sizeof(Query));
+
+                    Product res;
+                    read(sckfd, &res, sizeof(Product));
+                    if (res.id > 0)
+                    {
+                        printf("Added product with Id: %d to cart\n", res.id);
+                    }
+                    else
+                    {
+                        write(1, "Add unsuccessful... cart may be full or product not found!\n", sizeof("Add unsuccessful... cart may be full or product not found!\n"));
+                    }
                 }
                 else if (option == 4) // Update cart
                 {
                 }
                 else if (option == 5) // Exit
                 {
+                    userType = -1;
                     break;
                 }
                 else
@@ -122,7 +147,7 @@ int main()
                     int a, b, c;
                     char buf[100];
 
-                    write(1, "Enter p_id, p_name, price and quantity as space-seperated values:\n", sizeof("Enter p_id, p_name, price and quantity as space-seperated values:\n"));
+                    write(1, "Enter p_id, p_name, price and quantity as space-separated values:\n", sizeof("Enter p_id, p_name, price and quantity as space-seperated values:\n"));
                     scanf("%d %s %d %d", &a, buf, &b, &c);
 
                     Product p;

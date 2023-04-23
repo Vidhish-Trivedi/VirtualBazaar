@@ -34,6 +34,14 @@ void server(int nsd)
 				p_arr = getCartByCustomer(q.user_id);
 				write(nsd, p_arr, sizeof(Product) * MAX_CART_SIZE);
 			}
+			else if (q.query_num == 3)
+			{
+				read(nsd, &q, sizeof(Query));
+				Product p;
+				printf("%d,:: %d\n", q.product.id, q.user_id);
+				p = addProductToCart(q.product, q.user_id);
+				write(nsd, &p, sizeof(Product));
+			}
 		}
 		else if (type == 2) // Admin
 		{
@@ -238,10 +246,10 @@ Product deleteProduct(int ID) // Set quantity to negative.
 	{
 		// t.quantity = -10;
 		strcpy(empty_product.name, "deleted");
-		
+
 		lseek(fd, (-1) * sizeof(Product), SEEK_CUR);
 		int j = write(fd, &empty_product, sizeof(Product));
-		
+
 		if (j != 0)
 			result = true;
 		else
@@ -324,36 +332,71 @@ Product modifyProduct(Product n)
 }
 
 // TODO
-Product addProductToCart(int product_id, int ID, int quantity)
+Product addProductToCart(Product product, int ID)
 {
 	int i = ID;
 	bool result;
 	result = false;
 	int fl1;
 	int fd;
+	printf("%d, %d\n", product.id, product.quantity);
+	int quant = product.quantity;
+	product = getProductById(product.id);
+	int cnt = 0;
 
 	fd = open(CUSTOMER_FILE, O_RDWR);
+	lseek(fd, 0, SEEK_SET);
 
-	struct flock lock;
-	lock.l_type = F_WRLCK;
-	lock.l_whence = SEEK_SET;
-	lock.l_start = (i - 1) * sizeof(Customer);
-	lock.l_len = sizeof(Customer);
-	lock.l_pid = getpid();
+	printf("product q: %d\n", product.quantity);
 
-	fl1 = fcntl(fd, F_SETLKW, &lock);
+	if (quant <= product.quantity)
+	{
+		struct flock lock;
+		lock.l_type = F_WRLCK;
+		lock.l_whence = SEEK_SET;
+		lock.l_start = (i - 1) * sizeof(Customer);
+		lock.l_len = sizeof(Customer);
+		lock.l_pid = getpid();
 
-	Customer c;
-	lseek(fd, (i - 1) * sizeof(Customer), SEEK_SET);
-	read(fd, &c, sizeof(Customer));
+		fl1 = fcntl(fd, F_SETLKW, &lock);
 
-	// ! TODO: Update customer here.
+		Customer c;
+		lseek(fd, (i - 1) * sizeof(Customer), SEEK_SET);
+		read(fd, &c, sizeof(Customer));
 
-	lock.l_type = F_UNLCK;
-	fcntl(fd, F_SETLK, &lock);
+		// ! TODO: Update customer here
+		lseek(fd, (i - 1) * sizeof(Customer), SEEK_SET);
+
+		for (int k = 0; k < MAX_CART_SIZE; k++)
+		{
+			printf("----//%d\n", c.cart[k].quantity);
+			if (c.cart[k].quantity <= 0)
+			{
+				c.cart[k] = product;
+				cnt++;
+				break;
+			}
+		}
+
+		if (cnt > 0)
+		{
+			write(fd, &c, sizeof(Customer));
+		}
+
+		lock.l_type = F_UNLCK;
+		fcntl(fd, F_SETLK, &lock);
+	}
 
 	close(fd);
-	// return result;
+	if (cnt > 0)
+	{
+		return (product);
+	}
+	else
+	{
+		product.id = -1;
+		return (product);
+	}
 }
 
 // Can remove locking in below function.

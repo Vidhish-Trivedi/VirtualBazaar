@@ -49,7 +49,7 @@ typedef struct Admin
 Product* getAllProducts(Product p_arr[]);
 Product getProductById(int product_id);
 Product* getCartByCustomer(int customer_id);
-Product addProductToCart(int product_id, int customer_id, int quantity);
+Product addProductToCart(Product product, int customer_id);
 Product updateProductInCart(int customer_id, Product product);		// 0 on success.
 
 // Admin actions.
