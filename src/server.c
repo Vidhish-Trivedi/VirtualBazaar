@@ -79,7 +79,7 @@ Admin getAdmin(int ID)
 {
 	int i = ID;
 	Admin c;
-	int fd = open("Admin_User", O_RDONLY);
+	int fd = open(ADMIN_FILE, O_RDONLY);
 
 	int l1;
 	struct flock lock;
@@ -102,7 +102,7 @@ Customer getCustomer(int ID)
 {
 	int i = ID;
 	Customer c;
-	int fd = open("Customer_User", O_RDONLY);
+	int fd = open(CUSTOMER_FILE, O_RDONLY);
 	int l1;
 	struct flock lock;
 
@@ -123,7 +123,7 @@ Customer getCustomer(int ID)
 // TODO
 Customer addCustomer(Customer u)
 {
-	int fd = open("Customer_User", O_RDWR);
+	int fd = open(CUSTOMER_FILE, O_RDWR);
 	bool res;
 
 	int fl1;
@@ -159,7 +159,7 @@ Customer addCustomer(Customer u)
 
 Product addProduct(Product p)
 {
-	int fd = open("Product_List", O_RDWR);
+	int fd = open(PRODUCT_FILE, O_RDWR);
 	lseek(fd, 0, SEEK_SET);
 	bool res;
 	res = false;
@@ -219,7 +219,7 @@ Product deleteProduct(int ID) // Set quantity to negative.
 
 	int j = -1;
 
-	int fd = open("Product_List", O_RDWR);
+	int fd = open(PRODUCT_FILE, O_RDWR);
 
 	lseek(fd, 0, SEEK_SET);
 	int l1;
@@ -261,7 +261,7 @@ Product deleteProduct(int ID) // Set quantity to negative.
 Product modifyProduct(Product n)
 {
 	int i = n.id - 1;
-	int fd = open("Product_List", O_RDWR);
+	int fd = open(PRODUCT_FILE, O_RDWR);
 	lseek(fd, 0, SEEK_SET);
 	bool result = false;
 
@@ -327,7 +327,7 @@ Product addProductToCart(int product_id, int ID, int quantity)
 	int fl1;
 	int fd;
 
-	fd = open("Customer_User", O_RDWR);
+	fd = open(CUSTOMER_FILE, O_RDWR);
 
 	struct flock lock;
 	lock.l_type = F_WRLCK;
@@ -356,7 +356,7 @@ Product getProductById(int ID)
 	int i = ID - 1;
 	printf("i: %d\n", i);
 	Product p = {-1, "==", -1, -1};
-	int fd = open("Product_List", O_RDWR);
+	int fd = open(PRODUCT_FILE, O_RDWR);
 	lseek(fd, 0, SEEK_SET);
 	int l1;
 	struct flock lock;
@@ -393,7 +393,7 @@ Product *getAllProducts(Product p_arr[])
 
 	Product p;
 
-	int fd = open("Product_List", O_RDONLY);
+	int fd = open(PRODUCT_FILE, O_RDONLY);
 	lseek(fd, 0, SEEK_SET);
 	// printf("fd %d\n",fd);
 	// int l1;
@@ -438,7 +438,7 @@ Product *getCartByCustomer(int ID)
 	int fl1;
 	int fd;
 
-	fd = open("Customer_User", O_RDWR);
+	fd = open(CUSTOMER_FILE, O_RDWR);
 
 	struct flock lock;
 	lock.l_type = F_WRLCK;
@@ -472,7 +472,7 @@ Product updateProductInCart(int ID, Product product)
 	int fl1;
 	int fd;
 
-	fd = open("Customer_User", O_RDWR, 0777);
+	fd = open(CUSTOMER_FILE, O_RDWR, 0777);
 	lseek(fd, 0, SEEK_SET);
 
 	struct flock lock;

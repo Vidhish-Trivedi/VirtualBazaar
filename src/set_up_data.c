@@ -1,7 +1,7 @@
 #include "./../header/server.h"
 
 int main(){
-    int fd = open("Product_List", O_CREAT | O_EXCL | O_RDWR, 0744);
+    int fd = open(PRODUCT_FILE, O_CREAT | O_EXCL | O_RDWR, 0744);
     Product p;
     p.id = -1;
     strcpy(p.name,"==");
@@ -13,7 +13,7 @@ int main(){
     }
     close(fd);
 
-    fd = open("Customer_User", O_CREAT | O_EXCL | O_RDWR, 0744);
+    fd = open(CUSTOMER_FILE, O_CREAT | O_EXCL | O_RDWR, 0744);
     
     Customer c;
     c.id = -1;
@@ -31,7 +31,7 @@ int main(){
     }
     close(fd);
 
-    fd = open("Admin_User", O_CREAT | O_EXCL | O_RDWR, 0744);
+    fd = open(ADMIN_FILE, O_CREAT | O_EXCL | O_RDWR, 0744);
     
     Admin a;
     a.id = -1;
