@@ -4,10 +4,12 @@
 
 #include "./../header/server.h"
 
-// Server side CRUD operations which works analogous to Client side information.
-// Check whether file is present or not and take necessary action (locking and unlocking)
-// Prepare a response
-// Send the reponse to client
+/*
+	Server side CRUD operations which works analogous to Client side information.
+	Check whether file is present or not and take necessary action (locking and unlocking).
+	Prepare a response.
+	Send the reponse to clien.t
+*/
 
 void server(int nsd)
 {
@@ -41,9 +43,18 @@ void server(int nsd)
 			{
 				printf("in 1,3\n");
 				Product p;
-				printf("%d,:: %d\n", q.product.id, q.user_id);
 				p = addProductToCart(q.product, q.user_id);
 				write(nsd, &p, sizeof(Product));
+			}
+			else if (q.query_num == 4)
+			{
+				printf("in 1,4");
+				Product p;
+				p = updateProductInCart(q.product, q.user_id);
+				write(nsd, &p, sizeof(Product));
+			}
+			else if (q.query_num == 5)
+			{
 			}
 		}
 		else if (type == 2) // Admin
@@ -338,7 +349,6 @@ Product modifyProduct(Product n)
 	}
 }
 
-// TODO
 Product addProductToCart(Product product, int ID)
 {
 	int i = ID;
@@ -354,11 +364,10 @@ Product addProductToCart(Product product, int ID)
 	fd = open(CUSTOMER_FILE, O_RDWR);
 	lseek(fd, 0, SEEK_SET);
 
-
 	if (quant <= product.quantity)
 	{
 		product.quantity = quant;
-		
+
 		struct flock lock;
 		lock.l_type = F_WRLCK;
 		lock.l_whence = SEEK_SET;
@@ -372,8 +381,10 @@ Product addProductToCart(Product product, int ID)
 		lseek(fd, (i - 1) * sizeof(Customer), SEEK_SET);
 		read(fd, &c, sizeof(Customer));
 
-		// ! TODO: Update customer here
+		// Update customer here
 		lseek(fd, (i - 1) * sizeof(Customer), SEEK_SET);
+
+		// ! TODO: check for duplicate here.
 
 		for (int k = 0; k < MAX_CART_SIZE; k++)
 		{
@@ -513,11 +524,11 @@ Product *getCartByCustomer(int ID, Product p_arr[])
 	lock.l_type = F_UNLCK;
 	fcntl(fd, F_SETLK, &lock);
 
-	// ! TODO: Finish this.
-
 	close(fd);
 
-	for(int k = 0; k < MAX_CART_SIZE; k++){
+	// For returning cart of customer.
+	for (int k = 0; k < MAX_CART_SIZE; k++)
+	{
 		p_arr[k] = c.cart[k];
 	}
 
@@ -525,13 +536,14 @@ Product *getCartByCustomer(int ID, Product p_arr[])
 }
 
 //  ! TODO
-Product updateProductInCart(int ID, Product product)
+Product updateProductInCart(Product product, int ID)
 {
 	int i = ID - 1;
 	bool result;
 	result = false;
 	int fl1;
 	int fd;
+	int cnt = 0;
 
 	fd = open(CUSTOMER_FILE, O_RDWR, 0777);
 	lseek(fd, 0, SEEK_SET);
@@ -549,14 +561,38 @@ Product updateProductInCart(int ID, Product product)
 	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
 	read(fd, &c, sizeof(Customer));
 
+	// Update customer here
+	lseek(fd, (i - 1) * sizeof(Customer), SEEK_SET);
+
 	// ! TODO: Update.
+	for (int k = 0; k < MAX_CART_SIZE; k++)
+	{
+		if (c.cart[k].id == product.id)
+		{
+			c.cart[k].quantity = product.quantity;
+			cnt++;
+			break;
+		}
+	}
+
+	if (cnt > 0)
+	{
+		write(fd, &c, sizeof(Customer));
+	}
 
 	lock.l_type = F_UNLCK;
 	fcntl(fd, F_SETLK, &lock);
 
 	close(fd);
-
-	return (product);
+	if (cnt > 0)
+	{
+		return (product);
+	}
+	else
+	{
+		product.id = -1;
+		return (product);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////

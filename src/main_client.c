@@ -68,31 +68,35 @@ int main()
                     Query q = {option, 1, prod_ref};
                     write(sckfd, &q, sizeof(Query));
                     read(sckfd, product_array, sizeof(Product) * MAX_PRODUCTS);
-                    write(1, "--------------------------------------------------------------------\n", sizeof("--------------------------------------------------------------------\n"));
-                    write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
+                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+                    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\tQuantityAvailable |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
                     for (int idx = 0; idx < MAX_PRODUCTS; idx++)
                     {
-                        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity >= 0)
+                        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
                         {
-                            printf("%3d\t %20s\t %5d\t   %4d\n", product_array[idx].id, product_array[idx].name, product_array[idx].quantity, product_array[idx].price); // For formatting.
+                            printf("\t| %9d\t\t%11s\t\t%5d\t\t%17d |\n", product_array[idx].id, product_array[idx].name, product_array[idx].price, product_array[idx].quantity); // For formatting.
                         }
                     }
+                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
                 }
                 else if (option == 2) // List products in cart
                 {
                     Product product_array[MAX_CART_SIZE];
+                    
+                    // ! TODO: set user id.
                     Query q = {option, 1, prod_ref};
                     write(sckfd, &q, sizeof(Query));
                     read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
-                    write(1, "--------------------------------------------------------------------\n", sizeof("--------------------------------------------------------------------\n"));
-                    write(1, "ProductId        ProductName        Cost        QuantityAvailable\n", sizeof("ProductId        ProductName        Cost        QuantityAvailable\n"));
+                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+                    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\tQuantityAvailable |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
                     for (int idx = 0; idx < 25; idx++)
                     {
-                        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity >= 0)
+                        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
                         {
-                            printf("%3d\t %20s\t %5d\t   %4d\n", product_array[idx].id, product_array[idx].name, product_array[idx].quantity, product_array[idx].price); // For formatting.
+                            printf("\t| %9d\t\t%11s\t\t%5d\t\t%17d |\n", product_array[idx].id, product_array[idx].name, product_array[idx].price, product_array[idx].quantity); // For formatting.
                         }
                     }
+                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
                 }
                 else if (option == 3) // Add to cart (pid, quantity)
                 {
@@ -105,8 +109,7 @@ int main()
                     strcpy(p.name, "==");
                     p.price = -1;
 
-                    // Set user_id to query here.
-
+                    // ! TODO: set user id.
                     Query q = {3, 1, p};
                     write(sckfd, &q, sizeof(Query));
 
@@ -121,8 +124,34 @@ int main()
                         write(1, "Add unsuccessful... cart may be full or product not found!\n", sizeof("Add unsuccessful... cart may be full or product not found!\n"));
                     }
                 }
-                else if (option == 4) // Update cart
+                else if (option == 4) // Update cart (pid, quantity), to remove, set quantity to -1.
                 {
+                    write(1, "Enter product id to modify in cart:\n", sizeof("Enter product id to modify in cart:\n"));
+                    int a, b;
+                    scanf("%d", &a);
+                    write(1, "Enter new quantity (-1 to remove from cart):\n", sizeof("Enter new quantity (-1 to remove from cart):\n"));
+                    scanf("%d", &b);
+
+                    Product p;
+                    p.id = a;
+                    p.quantity = b;
+                    p.price = -1;
+                    strcpy(p.name, "==");
+
+                    // ! TODO: set user id.
+                    Query q = {4, 1, p};
+                    write(sckfd, &q, sizeof(Query));
+
+                    Product res;
+                    read(sckfd, &res, sizeof(Product));
+                    if (res.id > 0)
+                    {
+                        printf("Updated product with Id: %d to cart\n", res.id);
+                    }
+                    else
+                    {
+                        write(1, "Update unsuccessful... cart may have that product added!\n", sizeof("Update unsuccessful... cart may have that product added!\n"));
+                    }
                 }
                 else if (option == 5) // Exit
                 {
