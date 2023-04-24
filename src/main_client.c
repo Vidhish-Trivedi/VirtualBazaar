@@ -150,7 +150,7 @@ int main()
                     }
                     else
                     {
-                        write(1, "Update unsuccessful... cart may have that product added!\n", sizeof("Update unsuccessful... cart may have that product added!\n"));
+                        write(1, "Update unsuccessful... cart may not have that product added!\n", sizeof("Update unsuccessful... cart may not have that product added!\n"));
                     }
                 }
                 else if (option == 5) // Exit

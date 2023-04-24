@@ -562,16 +562,15 @@ Product updateProductInCart(Product product, int ID)
 	read(fd, &c, sizeof(Customer));
 
 	// Update customer here
-	lseek(fd, (i - 1) * sizeof(Customer), SEEK_SET);
+	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
 
 	// ! TODO: Update.
 	for (int k = 0; k < MAX_CART_SIZE; k++)
 	{
-		if (c.cart[k].id == product.id)
+		if (c.cart[k].id == product.id && c.cart[k].quantity > 0)
 		{
 			c.cart[k].quantity = product.quantity;
 			cnt++;
-			break;
 		}
 	}
 
