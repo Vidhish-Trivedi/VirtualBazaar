@@ -80,7 +80,7 @@ void server(int nsd)
 						p_arr_un[k].quantity = -10;
 						strcpy(p_arr_un[k].name, "==");
 
-						total_cost += p.price;
+						total_cost += p.price * p_arr[k].quantity;
 						cnt_available++;
 					}
 					else
@@ -280,11 +280,20 @@ Product addProduct(Product p)
 
 	fl1 = fcntl(fd, F_SETLKW, &lock);
 
-	// Read the last product data entry.
+	Product t;
 	lseek(fd, (p.id - 1) * sizeof(Product), SEEK_SET);
-	// read(fd, &t, sizeof(Product));
+	read(fd, &t, sizeof(Product));
 
-	// p.id = t.id + 1;
+	if (p.id == t.id && t.quantity >= 0)
+	{
+		// Product already exists.
+		lock.l_type = F_UNLCK;
+		fcntl(fd, F_SETLK, &lock);
+
+		close(fd);
+		p.id = -1;
+		return (p);
+	}
 
 	int j = write(fd, &p, sizeof(Product));
 	printf("j: %d\n", j);
@@ -464,21 +473,32 @@ Product addProductToCart(Product product, int ID)
 		// Update customer here
 		lseek(fd, (i - 1) * sizeof(Customer), SEEK_SET);
 
-		// ! TODO: check for duplicate here.
-
+		int is_dup = 0;
 		for (int k = 0; k < MAX_CART_SIZE; k++)
 		{
-			if (c.cart[k].quantity <= 0)
+			if (c.cart[k].quantity > 0 && c.cart[k].id == product.id)
 			{
-				c.cart[k] = product;
-				cnt++;
+				is_dup++;
 				break;
 			}
 		}
 
-		if (cnt > 0)
+		if (is_dup == 0)
 		{
-			write(fd, &c, sizeof(Customer));
+			for (int k = 0; k < MAX_CART_SIZE; k++)
+			{
+				if (c.cart[k].quantity <= 0)
+				{
+					c.cart[k] = product;
+					cnt++;
+					break;
+				}
+			}
+
+			if (cnt > 0)
+			{
+				write(fd, &c, sizeof(Customer));
+			}
 		}
 
 		lock.l_type = F_UNLCK;

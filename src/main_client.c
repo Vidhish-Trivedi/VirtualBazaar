@@ -122,7 +122,7 @@ int main()
                     }
                     else
                     {
-                        write(1, "Add unsuccessful... cart may be full or product not found!\n", sizeof("Add unsuccessful... cart may be full or product not found!\n"));
+                        write(1, "Add unsuccessful... cart may be full or product already in cart or product not found!\n", sizeof("Add unsuccessful... cart may be full or product already in cart or product not found!\n"));
                     }
                 }
                 else if (option == 4) // Update cart (pid, quantity), to remove, set quantity to -1.
@@ -279,7 +279,7 @@ int main()
                     }
                     else
                     {
-                        write(1, "Add unsuccessful... try again!\n", sizeof("Add unsuccessful... try again!\n"));
+                        write(1, "Add unsuccessful... product may already exist, try updating it!\n", sizeof("Add unsuccessful... product may already exist, try updating it!\n"));
                     }
                 }
                 else if (option == 2) // Delete a product
