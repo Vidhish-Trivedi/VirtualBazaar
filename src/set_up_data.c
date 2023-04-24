@@ -1,4 +1,6 @@
 #include "./../header/server.h"
+#include "./../header/User.h"
+#include "./../header/Admin.h"
 
 int main(){
     int fd = open(PRODUCT_FILE, O_CREAT | O_EXCL | O_RDWR, 0744);

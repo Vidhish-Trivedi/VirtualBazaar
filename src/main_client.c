@@ -13,15 +13,8 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
-#include "./../header/Order.h"
 #include "./../header/my_macros.h"
-
-typedef struct Query
-{
-    int query_num;
-    int user_type;
-    Product product;
-} Query;
+#include "./../header/Query.h"
 
 int main()
 {

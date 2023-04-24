@@ -16,6 +16,7 @@
 #include "my_macros.h"
 
 #ifndef SERVER_H
+#define SERVER_H
 
 // Utils for connection.
 void server(int new_sd);

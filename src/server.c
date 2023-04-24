@@ -3,9 +3,8 @@
 */
 
 #include "./../header/server.h"
-#include "./../header/Query.h"
-#include "./../header/Product.h"
 #include "./../header/User.h"
+#include "./../header/Admin.h"
 
 /*
 	Server side CRUD operations which works analogous to Client side information.

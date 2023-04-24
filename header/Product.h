@@ -7,6 +7,7 @@
 # include <stdio.h>
 
 #ifndef PRODUCT_H
+#define PRODUCT_H
 
 // Struct for product.
 typedef struct Product{

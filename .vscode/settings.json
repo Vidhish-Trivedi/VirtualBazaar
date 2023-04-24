@@ -3,6 +3,8 @@
         "*.ejs": "html",
         "socket.h": "c",
         "stdio.h": "c",
-        "server.h": "c"
+        "server.h": "c",
+        "user.h": "c",
+        "admin.h": "c"
     }
 }
