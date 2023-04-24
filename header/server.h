@@ -50,7 +50,8 @@ Product* getAllProducts(Product p_arr[]);
 Product getProductById(int product_id);
 Product* getCartByCustomer(int customer_id, Product p_arr[]);
 Product addProductToCart(Product product, int customer_id);
-Product updateProductInCart(Product product, int customer_id);		// 0 on success.
+Product updateProductInCart(Product product, int customer_id);
+void payment(int nsd, Query q);
 
 // Admin actions.
 Customer addCustomer(Customer r);

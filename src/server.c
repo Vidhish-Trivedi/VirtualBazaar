@@ -56,82 +56,7 @@ void server(int nsd)
 			else if (q.query_num == 5)
 			{
 				printf("in 1,5\n");
-
-				// ! TODO: Refactor as a function, will need to pass socket descriptor as argument.
-
-				// Get cart of customer
-				Product *p_arr = malloc(sizeof(Product) * MAX_CART_SIZE);
-				Product *p_arr_un = malloc(sizeof(Product) * MAX_CART_SIZE);
-				p_arr = getCartByCustomer(q.user_id, p_arr);
-
-				// Check quantity of all products in cart, calculate total.
-				int total_cost = 0;
-				Product p;
-				int cnt_available = 0;
-				for (int k = 0; k < MAX_CART_SIZE; k++)
-				{
-					p = getProductById(p_arr[k].id);
-					if (p_arr[k].quantity > 0 && p_arr[k].quantity <= p.quantity)
-					{
-						// Take cost from PRODUCT_FILE.
-						// Product price may have been updated since last adding it to cart.
-						p_arr_un[k].id = -1;
-						p_arr_un[k].price = -1;
-						p_arr_un[k].quantity = -10;
-						strcpy(p_arr_un[k].name, "==");
-
-						total_cost += p.price * p_arr[k].quantity;
-						cnt_available++;
-					}
-					else
-					{
-						p_arr_un[k] = p_arr[k];
-						p_arr[k].quantity = -10;
-					}
-				}
-				write(nsd, p_arr, sizeof(Product) * MAX_CART_SIZE);
-				write(nsd, p_arr_un, sizeof(Product) * MAX_CART_SIZE);
-
-				write(nsd, &cnt_available, sizeof(int));
-
-				if (cnt_available > 0)
-				{
-					write(nsd, &total_cost, sizeof(int));
-					int cost_confirm = -1;
-					read(nsd, &cost_confirm, sizeof(int));
-					int is_success = 0;
-					if (cost_confirm == total_cost)
-					{
-						is_success = 1;
-						// Update quantities in PRODUCT_FILE, from p_arr for products having quantity > 0;
-						// Empty cart of customer in CUSTOMER_FILE.
-						for (int k = 0; k < MAX_CART_SIZE; k++)
-						{
-							if (p_arr[k].quantity > 0)
-							{
-								// Get data from PRODUCT_FILE.
-								p = getProductById(p_arr[k].id);
-								// Decrease quantity.
-								p.quantity -= p_arr[k].quantity;
-								// Update PRODUCT_FILE.
-								p = modifyProduct(p);
-								// Remove product from cart.
-								p.quantity = -10;
-								p = updateProductInCart(p, q.user_id);
-							}
-						}
-
-						write(nsd, "Payment Successful!\n", sizeof("Payment Successful!\n"));
-					}
-					else
-					{
-						write(nsd, "Payment Unsuccessful!\n", sizeof("Payment Unsuccessful!\n"));
-					}
-				}
-				else
-				{
-					write(nsd, "No item in your cart can be bought! Update cart to continue.\n", sizeof("No item in your cart can be bought! Update cart to continue.\n"));
-				}
+				payment(nsd, q);
 			}
 			else if (q.query_num == 6)
 			{
@@ -295,6 +220,7 @@ Product addProduct(Product p)
 		return (p);
 	}
 
+	lseek(fd, (p.id - 1) * sizeof(Product), SEEK_SET);
 	int j = write(fd, &p, sizeof(Product));
 	printf("j: %d\n", j);
 	if (j != 0)
@@ -453,8 +379,10 @@ Product addProductToCart(Product product, int ID)
 	fd = open(CUSTOMER_FILE, O_RDWR);
 	lseek(fd, 0, SEEK_SET);
 
+	printf("==> %d and %d\n", quant, product.quantity);
 	if (quant <= product.quantity)
 	{
+		printf("fi\n");
 		product.quantity = quant;
 
 		struct flock lock;
@@ -479,12 +407,14 @@ Product addProductToCart(Product product, int ID)
 			if (c.cart[k].quantity > 0 && c.cart[k].id == product.id)
 			{
 				is_dup++;
+				printf("same: %d\n", product.id);
 				break;
 			}
 		}
 
 		if (is_dup == 0)
 		{
+			printf("si\n");
 			for (int k = 0; k < MAX_CART_SIZE; k++)
 			{
 				if (c.cart[k].quantity <= 0)
@@ -497,6 +427,7 @@ Product addProductToCart(Product product, int ID)
 
 			if (cnt > 0)
 			{
+				printf("ti\n");
 				write(fd, &c, sizeof(Customer));
 			}
 		}
@@ -690,6 +621,83 @@ Product updateProductInCart(Product product, int ID)
 	{
 		product.id = -1;
 		return (product);
+	}
+}
+
+void payment(int nsd, Query q)
+{
+	// Get cart of customer
+	Product *p_arr = malloc(sizeof(Product) * MAX_CART_SIZE);
+	Product *p_arr_un = malloc(sizeof(Product) * MAX_CART_SIZE);
+	p_arr = getCartByCustomer(q.user_id, p_arr);
+
+	// Check quantity of all products in cart, calculate total.
+	int total_cost = 0;
+	Product p;
+	int cnt_available = 0;
+	for (int k = 0; k < MAX_CART_SIZE; k++)
+	{
+		p = getProductById(p_arr[k].id);
+		if (p_arr[k].quantity > 0 && p_arr[k].quantity <= p.quantity)
+		{
+			// Take cost from PRODUCT_FILE.
+			// Product price may have been updated since last adding it to cart.
+			p_arr_un[k].id = -1;
+			p_arr_un[k].price = -1;
+			p_arr_un[k].quantity = -10;
+			strcpy(p_arr_un[k].name, "==");
+
+			total_cost += p.price * p_arr[k].quantity;
+			cnt_available++;
+		}
+		else
+		{
+			p_arr_un[k] = p_arr[k];
+			p_arr[k].quantity = -10;
+		}
+	}
+	write(nsd, p_arr, sizeof(Product) * MAX_CART_SIZE);
+	write(nsd, p_arr_un, sizeof(Product) * MAX_CART_SIZE);
+
+	write(nsd, &cnt_available, sizeof(int));
+
+	if (cnt_available > 0)
+	{
+		write(nsd, &total_cost, sizeof(int));
+		int cost_confirm = -1;
+		read(nsd, &cost_confirm, sizeof(int));
+		int is_success = 0;
+		if (cost_confirm == total_cost)
+		{
+			is_success = 1;
+			// Update quantities in PRODUCT_FILE, from p_arr for products having quantity > 0;
+			// Empty cart of customer in CUSTOMER_FILE.
+			for (int k = 0; k < MAX_CART_SIZE; k++)
+			{
+				if (p_arr[k].quantity > 0)
+				{
+					// Get data from PRODUCT_FILE.
+					p = getProductById(p_arr[k].id);
+					// Decrease quantity.
+					p.quantity -= p_arr[k].quantity;
+					// Update PRODUCT_FILE.
+					p = modifyProduct(p);
+					// Remove product from cart.
+					p.quantity = -10;
+					p = updateProductInCart(p, q.user_id);
+				}
+			}
+
+			write(nsd, "Payment Successful!\n", sizeof("Payment Successful!\n"));
+		}
+		else
+		{
+			write(nsd, "Payment Unsuccessful!\n", sizeof("Payment Unsuccessful!\n"));
+		}
+	}
+	else
+	{
+		write(nsd, "No item in your cart can be bought! Update cart to continue.\n", sizeof("No item in your cart can be bought! Update cart to continue.\n"));
 	}
 }
 
