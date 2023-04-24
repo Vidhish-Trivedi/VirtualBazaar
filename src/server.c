@@ -535,7 +535,6 @@ Product *getCartByCustomer(int ID, Product p_arr[])
 	return (p_arr);
 }
 
-//  ! TODO
 Product updateProductInCart(Product product, int ID)
 {
 	int i = ID - 1;
