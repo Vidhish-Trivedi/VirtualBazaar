@@ -55,6 +55,47 @@ void server(int nsd)
 			}
 			else if (q.query_num == 5)
 			{
+				printf("in 1,5");
+
+				// ! TODO: Refactor as a function, will need to pass socket descriptor as argument.
+
+				// Get cart of customer
+				Product *p_arr = malloc(sizeof(Product) * MAX_CART_SIZE);
+				p_arr = getCartByCustomer(q.user_id, p_arr);
+
+				// Check quantity of all products in cart, calculate total.
+				int total_cost = 0;
+				for (int k = 0; k < MAX_CART_SIZE; k++)
+				{
+					Product p;
+					p = getProductById(p_arr[k].id);
+					if (p_arr[k].quantity > 0 && p_arr[k].quantity <= p.quantity)
+					{
+						// Take cost from PRODUCT_FILE.
+						// Product price may have been updated since last adding it to cart.
+						total_cost += p.price;
+					}
+					else
+					{
+						p_arr[k].quantity = -10;
+					}
+				}
+				write(nsd, p_arr, sizeof(Product) * MAX_CART_SIZE);
+				write(nsd, &total_cost, sizeof(int));
+
+				int cost_confirm = -1;
+				read(nsd, &cost_confirm, sizeof(int));
+
+				int is_success = 0;
+				if (cost_confirm == total_cost)
+				{
+					is_success = 1;
+					// Update quantities in PRODUCT_FILE, from p_arr for products having quantity > 0;
+					// Empty cart of customer in CUSTOMER_FILE.
+				}
+			}
+			else if (q.query_num == 6)
+			{
 			}
 		}
 		else if (type == 2) // Admin
