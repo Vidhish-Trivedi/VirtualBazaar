@@ -89,7 +89,7 @@ int main()
                     write(sckfd, &q, sizeof(Query));
                     read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
                     write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
-                    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\tQuantityAvailable |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
+                    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\t    QuantityAdded |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
                     for (int idx = 0; idx < MAX_CART_SIZE; idx++)
                     {
                         if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
@@ -166,9 +166,6 @@ int main()
                     // Generate receipt.
 
                     // ! TODO: set user id.
-                    Query q = {5, 1, prod_ref};
-                    write(sckfd, &q, sizeof(Query));
-
                     write(1, "Products in cart available in sufficient quantity are:\n", sizeof("Products in cart available in sufficient quantity are:\n"));
                     Product product_array[MAX_CART_SIZE];
 
@@ -177,7 +174,7 @@ int main()
 
                     read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
                     write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
-                    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\tQuantityAvailable |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
+                    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\t    QuantityAdded |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
                     for (int idx = 0; idx < MAX_CART_SIZE; idx++)
                     {
                         if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
@@ -187,15 +184,45 @@ int main()
                     }
                     write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
                     write(1, "\tPrices may vary from the time you added a product to your cart.\n", sizeof("\tPrices may vary from the time you added a product to your cart.\n"));
+                    write(1, "\nOther products in cart which are not available in sufficient quantity:\n", sizeof("\nOther products in cart which are not available in sufficient quantity:\n"));
 
-                    int total_cost = 0;
-                    read(sckfd, &total_cost, sizeof(int));
-                    printf("\tTotal amount to pay: %5d\n", total_cost);
+                    // ! TODO: Display them.
+                    read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
+                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+                    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\t    QuantityAdded |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
+                    for (int idx = 0; idx < MAX_CART_SIZE; idx++)
+                    {
+                        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
+                        {
+                            printf("\t| %9d\t\t%11s\t\t%5d\t\t%17d |\n", product_array[idx].id, product_array[idx].name, product_array[idx].price, product_array[idx].quantity); // For formatting.
+                        }
+                    }
+                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
 
-                    write(1, "Enter the amount displayed above to confirm:\n", sizeof("Enter the amount displayed above to confirm:\n"));
-                    int cost_confirm = -1;
-                    scanf("%d", &cost_confirm);
-                    write(sckfd, &cost_confirm, sizeof(int));
+                    int cnt_available = 0;
+                    read(sckfd, &cnt_available, sizeof(int));
+
+                    if (cnt_available > 0)
+                    {
+                        int total_cost = 0;
+                        read(sckfd, &total_cost, sizeof(int));
+                        printf("\tTotal amount to pay: %5d\n", total_cost);
+
+                        write(1, "Enter the amount displayed above to confirm:\n", sizeof("Enter the amount displayed above to confirm:\n"));
+                        int cost_confirm = -1;
+                        scanf("%d", &cost_confirm);
+                        write(sckfd, &cost_confirm, sizeof(int));
+
+                        char buf[50];
+                        int ret = read(sckfd, buf, sizeof(buf));
+                        write(1, buf, ret);
+                    }
+                    else
+                    {
+                        char buf[75];
+                        int ret = read(sckfd, buf, sizeof(buf));
+                        write(1, buf, ret);
+                    }
                 }
                 else if (option == 6) // Exit
                 {
