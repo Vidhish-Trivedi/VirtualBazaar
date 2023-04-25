@@ -54,16 +54,7 @@ int main()
                     Query q = {option, 1, prod_ref};
                     write(sckfd, &q, sizeof(Query));
                     read(sckfd, product_array, sizeof(Product) * MAX_PRODUCTS);
-                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
-                    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\tQuantityAvailable |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
-                    for (int idx = 0; idx < MAX_PRODUCTS; idx++)
-                    {
-                        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
-                        {
-                            printf("\t| %9d\t\t%11s\t\t%5d\t\t%17d |\n", product_array[idx].id, product_array[idx].name, product_array[idx].price, product_array[idx].quantity); // For formatting.
-                        }
-                    }
-                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+                    listProducts(product_array);
                 }
                 else if (option == 2) // List products in cart
                 {
@@ -73,16 +64,7 @@ int main()
                     Query q = {option, 1, prod_ref};
                     write(sckfd, &q, sizeof(Query));
                     read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
-                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
-                    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\t    QuantityAdded |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
-                    for (int idx = 0; idx < MAX_CART_SIZE; idx++)
-                    {
-                        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
-                        {
-                            printf("\t| %9d\t\t%11s\t\t%5d\t\t%17d |\n", product_array[idx].id, product_array[idx].name, product_array[idx].price, product_array[idx].quantity); // For formatting.
-                        }
-                    }
-                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+                    listCart(product_array);
                 }
                 else if (option == 3) // Add to cart (pid, quantity)
                 {
@@ -158,31 +140,16 @@ int main()
                     write(sckfd, &q, sizeof(Query));
 
                     read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
-                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
-                    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\t    QuantityAdded |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
-                    for (int idx = 0; idx < MAX_CART_SIZE; idx++)
-                    {
-                        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
-                        {
-                            printf("\t| %9d\t\t%11s\t\t%5d\t\t%17d |\n", product_array[idx].id, product_array[idx].name, product_array[idx].price, product_array[idx].quantity); // For formatting.
-                        }
-                    }
-                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+                    
+                    listCart(product_array);
+
                     write(1, "\tPrices may vary from the time you added a product to your cart.\n", sizeof("\tPrices may vary from the time you added a product to your cart.\n"));
                     write(1, "\nOther products in cart which are not available in sufficient quantity:\n", sizeof("\nOther products in cart which are not available in sufficient quantity:\n"));
 
-                    // ! TODO: Display them.
+                    
                     read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
-                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
-                    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\t    QuantityAdded |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
-                    for (int idx = 0; idx < MAX_CART_SIZE; idx++)
-                    {
-                        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
-                        {
-                            printf("\t| %9d\t\t%11s\t\t%5d\t\t%17d |\n", product_array[idx].id, product_array[idx].name, product_array[idx].price, product_array[idx].quantity); // For formatting.
-                        }
-                    }
-                    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+                    
+                    listCart(product_array);
 
                     int cnt_available = 0;
                     read(sckfd, &cnt_available, sizeof(int));

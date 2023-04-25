@@ -29,3 +29,31 @@ void adminMenu()
     write(1, "3.) Update product details\n", sizeof("3.) Update product details\n"));
     write(1, "4.) Exit\n", sizeof("4.) Exit\n"));
 }
+
+void listProducts(Product product_array[])
+{
+    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\tQuantityAvailable |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
+    for (int idx = 0; idx < MAX_PRODUCTS; idx++)
+    {
+        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
+        {
+            printf("\t| %9d\t\t%11s\t\t%5d\t\t%17d |\n", product_array[idx].id, product_array[idx].name, product_array[idx].price, product_array[idx].quantity); // For formatting.
+        }
+    }
+    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+}
+
+void listCart(Product product_array[])
+{
+    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+    write(1, "\t| ProductId\t\tProductName\t\t Cost\t\t    QuantityAdded |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
+    for (int idx = 0; idx < MAX_CART_SIZE; idx++)
+    {
+        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
+        {
+            printf("\t| %9d\t\t%11s\t\t%5d\t\t%17d |\n", product_array[idx].id, product_array[idx].name, product_array[idx].price, product_array[idx].quantity); // For formatting.
+        }
+    }
+    write(1, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+}

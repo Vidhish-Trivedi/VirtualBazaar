@@ -5,6 +5,8 @@
         "stdio.h": "c",
         "server.h": "c",
         "user.h": "c",
-        "admin.h": "c"
+        "admin.h": "c",
+        "product.h": "c",
+        "client_menu.h": "c"
     }
 }
