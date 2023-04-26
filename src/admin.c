@@ -65,6 +65,7 @@ Customer addCustomer(Customer u)
 	// return res;
 }
 
+// No locking required.
 Product addProduct(Product p)
 {
 	int fd = open(PRODUCT_FILE, O_RDWR);
@@ -72,15 +73,15 @@ Product addProduct(Product p)
 	bool res;
 	res = false;
 
-	int fl1;
-	struct flock lock;
-	lock.l_type = F_WRLCK;
-	lock.l_whence = SEEK_SET;
-	lock.l_start = 0;
-	lock.l_len = 0;
-	lock.l_pid = getpid();
+	// int fl1;
+	// struct flock lock;
+	// lock.l_type = F_WRLCK;
+	// lock.l_whence = SEEK_SET;
+	// lock.l_start = (p.id - 1) * sizeof(Product);
+	// lock.l_len = sizeof(Product);
+	// lock.l_pid = getpid();
 
-	fl1 = fcntl(fd, F_SETLKW, &lock);
+	// fl1 = fcntl(fd, F_SETLKW, &lock);
 
 	Product t;
 	lseek(fd, (p.id - 1) * sizeof(Product), SEEK_SET);
@@ -89,8 +90,8 @@ Product addProduct(Product p)
 	if (p.id == t.id && t.quantity >= 0)
 	{
 		// Product already exists.
-		lock.l_type = F_UNLCK;
-		fcntl(fd, F_SETLK, &lock);
+		// lock.l_type = F_UNLCK;
+		// fcntl(fd, F_SETLK, &lock);
 
 		close(fd);
 		p.id = -1;
@@ -110,8 +111,8 @@ Product addProduct(Product p)
 		res = false;
 	}
 
-	lock.l_type = F_UNLCK;
-	fcntl(fd, F_SETLK, &lock);
+	// lock.l_type = F_UNLCK;
+	// fcntl(fd, F_SETLK, &lock);
 
 	close(fd);
 	if (res)
@@ -125,6 +126,7 @@ Product addProduct(Product p)
 	}
 }
 
+// Advisory locking (Write lock).
 Product deleteProduct(int ID) // Set quantity to negative.
 {
 	int i = ID - 1;
@@ -181,6 +183,7 @@ Product deleteProduct(int ID) // Set quantity to negative.
 	}
 }
 
+// Advisory locking (Write lock).
 Product modifyProduct(Product n)
 {
 	int i = n.id - 1;
