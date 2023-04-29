@@ -5,6 +5,7 @@
 #include "./../header/User.h"
 #include "./../header/Admin.h"
 
+// TODO
 Customer getCustomer(int ID)
 {
 	int i = ID;
@@ -111,7 +112,7 @@ Product addProductToCart(Product product, int ID)
 	}
 }
 
-// Can remove locking in below function.
+// Advisory locking (Read lock).
 Product getProductById(int ID)
 {
 	int i = ID - 1;
@@ -124,8 +125,8 @@ Product getProductById(int ID)
 
 	lock.l_type = F_RDLCK;
 	lock.l_whence = SEEK_SET;
-	lock.l_start = 0;
-	lock.l_len = 0;
+	lock.l_start = i * sizeof(Product);
+	lock.l_len = sizeof(Product);
 	lock.l_pid = getpid();
 	printf("1\n");
 	l1 = fcntl(fd, F_SETLKW, &lock);
@@ -148,11 +149,9 @@ Product getProductById(int ID)
 	return p;
 }
 
-// Can do mandatory locking in below function.
+// Mandatory locking (Read lock). // TODO
 Product *getAllProducts(Product p_arr[])
 {
-	// Product *p_arr = malloc(sizeof(Product) * 30);
-
 	Product p;
 
 	int fd = open(PRODUCT_FILE, O_RDONLY);
@@ -257,7 +256,6 @@ Product updateProductInCart(Product product, int ID)
 	// Update customer here
 	lseek(fd, (i) * sizeof(Customer), SEEK_SET);
 
-	// ! TODO: Update.
 	for (int k = 0; k < MAX_CART_SIZE; k++)
 	{
 		if (c.cart[k].id == product.id && c.cart[k].quantity > 0)

@@ -92,6 +92,9 @@ void server(int nsd)
 			}
 			else if (q.query_num == 4)
 			{
+				printf("in 2,4\n");
+				generateLog();
+				write(nsd, "Generated Log\n", sizeof("Generated Log\n"));
 			}
 		}
 	}

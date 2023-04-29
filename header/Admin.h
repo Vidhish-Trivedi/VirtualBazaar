@@ -1,4 +1,5 @@
 #include "User.h"
+#include <time.h>
 
 #ifndef ADMIN_H
 #define ADMIN_H
@@ -17,7 +18,7 @@ Customer addCustomer(Customer r);
 Product addProduct(Product product);
 Product deleteProduct(int product_id);
 Product modifyProduct(Product product);		// set field to -1 when you don't want to update it.
-// bool generateLog();
+int generateLog();
 
 Admin getAdmin(int ID);
 

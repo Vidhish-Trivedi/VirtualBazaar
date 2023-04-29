@@ -6,4 +6,5 @@
 #define ADMIN_FILE "/home/vidhish/Desktop/os-project/Online-Retail-Store/data/Admin_User"
 #define CUSTOMER_FILE "/home/vidhish/Desktop/os-project/Online-Retail-Store/data/Customer_User"
 #define PRODUCT_FILE "/home/vidhish/Desktop/os-project/Online-Retail-Store/data/Product_List"
+#define ADMIN_LOG_FILE "/home/vidhish/Desktop/os-project/Online-Retail-Store/logs/admin/Admin_Log.txt"
 #endif

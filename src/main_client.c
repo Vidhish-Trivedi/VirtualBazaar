@@ -287,9 +287,11 @@ int main()
                 }
                 else if (option == 4) // Exit, generate product stock log.
                 {
-                    // ! TODO: Generate log file.
-                    Query q = {-1, -1, prod_ref};
+                    Query q = {4, 2, prod_ref};
                     write(sckfd, &q, sizeof(Query));
+                    char buf[200];
+                    int ret = read(sckfd, buf, sizeof(buf));
+                    write(1, buf, ret);
                     userType = -1;
                     break;
                 }
@@ -304,6 +306,9 @@ int main()
         else if (userType == 3)
         {
             // Exit application
+            Query q = {-1, -1, prod_ref};
+            userType = -1;
+            write(sckfd, &q, sizeof(Query));
             write(1, "Bye Bye!\n", sizeof("Bye Bye!\n"));
             break;
         }

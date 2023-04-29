@@ -243,3 +243,37 @@ Product modifyProduct(Product n)
 		return (empty_product);
 	}
 }
+
+// Generate Log.
+int generateLog()
+{
+	// strcat(ADMIN_LOG_FILE, ".txt");
+	int fd = open(ADMIN_LOG_FILE, O_WRONLY | O_CREAT | O_APPEND, 0777);
+	lseek(fd, 0, SEEK_END);
+
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	printf("Log generated at: %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+	char buf[200];
+	char buf1[500];
+	int k = sprintf(buf, "Log generated at: %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+
+	Product *product_array = malloc(sizeof(Product) * MAX_PRODUCTS);
+	product_array = getAllProducts(product_array);
+
+	write(fd, buf, k);
+	write(fd, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+    write(fd, "| ProductId\t\tProductName\t\t Cost\t\tQuantityAvailable |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
+    for (int idx = 0; idx < MAX_PRODUCTS; idx++)
+    {
+        if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
+        {
+            k = sprintf(buf1, "\t| %9d\t\t%11s\t\t%5d\t\t%17d |\n", product_array[idx].id, product_array[idx].name, product_array[idx].price, product_array[idx].quantity); // For formatting.
+			write(fd, buf1, k);
+		}
+    }
+    write(fd, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
+
+	close(fd);
+	return (0);
+}
