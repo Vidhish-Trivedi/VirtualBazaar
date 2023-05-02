@@ -62,10 +62,14 @@ target/client_exe
 
 ## File structure and design choices
 
-| File                       | Role                                                                                                                                                                                                                                                                                              |
+| Directory                       | Role                                                                                                                                                                                                                                                                                              |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data/data.h`              | defines the data structures and constants used by the program, making it easier to work with and manipulate the data stored in the programs's data files.                                                                                                                                         |
-| `init.c`                   | responsible for setting up the initial state of the data files used by the system, ensuring that they exist and contain the necessary data for the system to function properly.                                                                                                            |
+| `data/`              | Directory for files which store data about users and products persistently.                                                                                                                                         |
+| `logs/admin`                   | Directory for storing log file for Admin.                                                                                                           |
+| `logs/receipts`                   | Directory for storing receipt files for purchases made by users.                                                                                                           |
+| `header/`                   | Directory for header files.                                                                                                           |
+| `src/`                   | Directory for source files.                                                                                                           |
+| `target/`                   | Directory where the object files and executables are generated.                                                                                                           |
 
 ##
 
