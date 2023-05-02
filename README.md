@@ -1,6 +1,10 @@
 # Online Retail Store
 
 - This project was made as part of the course: Operating Systems - Lab (EG301P), at IIIT-Bangalore.
+- This is a client-server based application that allows users to browse and purchase products online. The system has features such as product browsing, adding products to cart, checkout and order placement.
+- The server-side of the application is responsible for handling client requests, managing product and user data, and processing orders.
+- The client-side of the application provides a user-friendly interface for users (customers) and admins to interact with the system using the terminal.
+- The project uses various programming concepts such as socket programming, file handling, multi-threading and file locking.
 
 ## Requirements and Running the Project
 
@@ -56,10 +60,26 @@ target/client_exe
 - Purchase products in cart.
 - Logout
 
-## Contributing
+## File structure and design choices
 
-Pull requests are welcome. For major changes, please open an issue first.
-to discuss what you would like to change.
+| File                       | Role                                                                                                                                                                                                                                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data/data.h`              | defines the data structures and constants used by the program, making it easier to work with and manipulate the data stored in the programs's data files.                                                                                                                                         |
+| `init.c`                   | responsible for setting up the initial state of the data files used by the system, ensuring that they exist and contain the necessary data for the system to function properly.                                                                                                            |
+
+##
+
+## OS Concepts Used
+
+- **Socket**: Sockets are used to establish a connection between the client and server terminals. The client sends requests to the server using sockets, and the server responds to these requests using the same socket. This allows for real-time communication between the client and server, enabling the user to browse and purchase products seamlessly.
+
+- **Multithreading**: Multithreading is used to handle multiple client connections simultaneously. Each client connection is handled by a separate thread, allowing the server to handle multiple requests at the same time. This improves the performance of the system and ensures that the user experience is not affected by the number of clients connected to the server. (Used to set up a concurrent server).
+
+- **File Locking**: File locking is used to prevent multiple clients from accessing the same file simultaneously. When a client accesses a file, the specific record of the file is locked, preventing other clients from accessing it until the first client has finished. This ensures that the data in the file is not corrupted due to multiple clients accessing it at the same time.
+
+## Authors
+
+- [@Vidhish-Trivedi](https://github.com/Vidhish-Trivedi)
 
 ## License
 
