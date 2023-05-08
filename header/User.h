@@ -10,6 +10,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include "my_macros.h"
+#include <time.h>
 
 #include "Query.h"
 #ifndef USER_H

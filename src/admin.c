@@ -262,18 +262,20 @@ int generateLog()
 	product_array = getAllProducts(product_array);
 
 	write(fd, buf, k);
-	write(fd, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
-    write(fd, "| ProductId\t\tProductName\t\t Cost\t\tQuantityAvailable |\n", sizeof("\t| ProductId\t\tProductName\t\tCost\t\tQuantityAvailable |\n"));
-    for (int idx = 0; idx < MAX_PRODUCTS; idx++)
+	k = sprintf(buf, "------------------------------------------------------\n");
+	write(fd, buf, k);
+    k = sprintf(buf, "| ProductId\t\tProductName\t\t Cost\t\tQuantityAvailable |\n");
+	write(fd, buf, k);
+	for (int idx = 0; idx < MAX_PRODUCTS; idx++)
     {
         if (product_array[idx].id > 0 && product_array[idx].id < MAX_PRODUCTS + 1 && product_array[idx].quantity > 0)
         {
-            k = sprintf(buf1, "\t| %9d\t\t%11s\t\t%5d\t\t%17d |\n", product_array[idx].id, product_array[idx].name, product_array[idx].price, product_array[idx].quantity); // For formatting.
+            k = sprintf(buf1, "| %9d\t\t%11s\t\t%5d\t\t%17d |\n", product_array[idx].id, product_array[idx].name, product_array[idx].price, product_array[idx].quantity); // For formatting.
 			write(fd, buf1, k);
 		}
     }
-    write(fd, "\t-----------------------------------------------------------------------------------\n", sizeof("\t-----------------------------------------------------------------------------------\n"));
-
+	k = sprintf(buf, "------------------------------------------------------\n");
+	write(fd, buf, k);
 	close(fd);
 	return (0);
 }

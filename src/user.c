@@ -285,6 +285,43 @@ Product updateProductInCart(Product product, int ID)
 	}
 }
 
+int generateReciept(Query q, int total, Product p_arr[])
+{
+	// strcat(ADMIN_LOG_FILE, ".txt");
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	char file_name[100];
+	int k = sprintf(file_name, "/home/vidhish/Desktop/os-project/Online-Retail-Store/logs/receipts/%d-%02d-%02d_%02d-%02d-%02d.txt", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+	int fd = open(file_name, O_WRONLY | O_CREAT | O_APPEND, 0777);
+	lseek(fd, 0, SEEK_END);
+	
+	printf("Reciept generated at: %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+	char buf[200];
+	char buf1[500];
+	k = sprintf(buf, "Receipt generated at: %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+
+	write(fd, buf, k);
+	k = sprintf(buf, "------------------------------------------------------\n");
+	write(fd, buf, k);
+    k = sprintf(buf, "| ProductId\t\tProductName\t\t Cost\t\tQuantity |\n");
+	write(fd, buf, k);
+    for (int idx = 0; idx < MAX_PRODUCTS; idx++)
+    {
+        if (p_arr[idx].id > 0 && p_arr[idx].id < MAX_PRODUCTS + 1 && p_arr[idx].quantity > 0)
+        {
+            k = sprintf(buf1, "| %9d\t\t%11s\t\t%5d\t\t%8d |\n", p_arr[idx].id, p_arr[idx].name, p_arr[idx].price, p_arr[idx].quantity); // For formatting.
+			write(fd, buf1, k);
+		}
+    }
+	k = sprintf(buf, "------------------------------------------------------\n");
+	write(fd, buf, k);
+	k = sprintf(buf, "Total Cost: %d\n", total);
+	write(fd, buf, k);
+
+	close(fd);
+	return (0);
+}
+
 void payment(int nsd, Query q)
 {
 	// Get cart of customer
@@ -331,6 +368,8 @@ void payment(int nsd, Query q)
 		if (cost_confirm == total_cost)
 		{
 			is_success = 1;
+			write(nsd, "Payment Successful!\n", sizeof("Payment Successful!\n"));
+			generateReciept(q, total_cost, p_arr);
 			// Update quantities in PRODUCT_FILE, from p_arr for products having quantity > 0;
 			// Empty cart of customer in CUSTOMER_FILE.
 			for (int k = 0; k < MAX_CART_SIZE; k++)
@@ -348,8 +387,6 @@ void payment(int nsd, Query q)
 					p = updateProductInCart(p, q.user_id);
 				}
 			}
-
-			write(nsd, "Payment Successful!\n", sizeof("Payment Successful!\n"));
 		}
 		else
 		{
