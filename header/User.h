@@ -34,6 +34,7 @@ Product* getCartByCustomer(int customer_id, Product p_arr[]);
 Product addProductToCart(Product product, int customer_id);
 Product updateProductInCart(Product product, int customer_id);
 void payment(int nsd, Query q);
+int generateReciept(Query q, int total, Product p_arr[]);
 
 // Miscellaneous.
 Customer getCustomer(int customer_id);
