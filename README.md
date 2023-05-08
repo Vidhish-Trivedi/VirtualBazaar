@@ -1,6 +1,10 @@
 # Online Retail Store
 
 - This project was made as part of the course: Operating Systems - Lab (EG301P), at IIIT-Bangalore.
+- This is a client-server based application that allows users to browse and purchase products online. The system has features such as product browsing, adding products to cart, checkout and order placement.
+- The server-side of the application is responsible for handling client requests, managing product and user data, and processing orders.
+- The client-side of the application provides a user-friendly interface for users (customers) and admins to interact with the system using the terminal.
+- The project uses various programming concepts such as socket programming, file handling, multi-threading and file locking.
 
 ## Requirements and Running the Project
 
@@ -56,10 +60,44 @@ target/client_exe
 - Purchase products in cart.
 - Logout
 
-## Contributing
+## File structure and design choices
 
-Pull requests are welcome. For major changes, please open an issue first.
-to discuss what you would like to change.
+| Directory                       | Role                                                                                                                                                                                                                                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data/`              | Directory for files which store data about users and products persistently.                                                                                                                                         |
+| `logs/admin`                   | Directory for storing log file for Admin.                                                                                                           |
+| `logs/receipts`                   | Directory for storing receipt files for purchases made by users.                                                                                                           |
+| `header/`                   | Directory for header files.                                                                                                           |
+| `src/`                   | Directory for source files.                                                                                                           |
+| `target/`                   | Directory where the object files and executables are generated.                                                                                                           |
+
+##
+
+| File                       | Role                                                                                                                                                                                                                                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/main_server.c`              | Contains main function for starting the server-side application.                                                                                                                                         |
+| `src/main_client.c`                   | Contains main function for starting the client-side application.                                                                                                           |
+| `src/client_menu.c`                   | Contains functions to display various menus on the client-side application.                                                                                                           |
+| `src/server.c`                   | Contains functions for server and connection, which are called when a separate thread is created for an incoming client.                                                                                                           |
+| `src/admin.c`                   | Contains functions for admin-related actions.                                                                                                           |
+| `src/user.c`                   | Contains functions for user-related (customer) actions.                                                                                                          |
+| `src/set_up_data.c`                   | Contains main function for setting up the data files initially.                                                                                                           |
+- Note that the above table mentions source files. The corresponding header files can be found in the header/ directory in the project root.
+##
+
+## OS Concepts Used
+
+- **Socket**: Sockets are used to establish a connection between the client and server terminals. The client sends requests to the server using sockets, and the server responds to these requests using the same socket. This allows for real-time communication between the client and server, enabling the user to browse and purchase products seamlessly.
+
+- **Multithreading**: Multithreading is used to handle multiple client connections simultaneously. Each client connection is handled by a separate thread, allowing the server to handle multiple requests at the same time. This improves the performance of the system and ensures that the user experience is not affected by the number of clients connected to the server. (Used to set up a concurrent server).
+
+- **File Locking**: File locking is used to prevent multiple clients from accessing the same file simultaneously. When a client accesses a file, the specific record of the file is locked, preventing other clients from accessing it until the first client has finished. This ensures that the data in the file is not corrupted due to multiple clients accessing it at the same time.
+
+- **File Handling**: For reading from data files and writing to data files. This makes use of read() and write() system calls and allows us to persistently store data.
+
+## Authors
+
+- [@Vidhish-Trivedi](https://github.com/Vidhish-Trivedi)
 
 ## License
 
