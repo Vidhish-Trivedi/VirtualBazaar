@@ -9,6 +9,7 @@
 #define CLIENT_MENU_H
 
 void loginMenu();
+int authMenu();
 void customerMenu();
 void adminMenu();
 void listProducts(Product p_arr[]);

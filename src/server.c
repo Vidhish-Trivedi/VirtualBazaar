@@ -16,15 +16,27 @@
 void server(int nsd)
 {
 	int msgLength, select, type, option, currUserID;
+	char psswd[15];
 	Query q;
 
 	// Handling requests.
 	while (1)
 	{
+		int is_auth = -1;
 		read(nsd, &type, sizeof(type));
+		read(nsd, &currUserID, sizeof(currUserID));
+		read(nsd, psswd, sizeof(psswd));
 
-		if (type == 1)
+		Customer tmp_customer = getCustomer(currUserID);
+		printf("f: %s\ne: %s\n", tmp_customer.password, psswd);
+		if(strcmp(tmp_customer.password, psswd) == 0){
+			is_auth = 0;
+		}
+		write(nsd, &is_auth, sizeof(is_auth));
+
+		while (type == 1)
 		{
+			read(nsd, &type, sizeof(type));
 			printf("...customer...\n");
 			read(nsd, &q, sizeof(Query));
 			if (q.query_num == 1)
@@ -62,9 +74,11 @@ void server(int nsd)
 			}
 			else if (q.query_num == 6)
 			{
+				write(1, "Logout...\n", sizeof("Logout...\n"));
+				break;
 			}
 		}
-		else if (type == 2) // Admin
+		while (type == 2) // Admin
 		{
 			printf("...admin...\n");
 			read(nsd, &q, sizeof(Query));

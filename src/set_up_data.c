@@ -33,6 +33,7 @@ int main(){
     
     lseek(fd, 0, SEEK_SET);
     for(int i = 0; i < 25; i++){
+        c.id = i + 1;
         write(fd, &c, sizeof(Customer));
     }
     close(fd);
@@ -40,7 +41,7 @@ int main(){
     fd = open(ADMIN_FILE, O_CREAT | O_EXCL | O_RDWR, 0744);
     
     Admin a;
-    a.id = -1;
+    a.id = 1;
     strcpy(a.uname, "store_admin");
     strcpy(a.password, "admin_pass");
     

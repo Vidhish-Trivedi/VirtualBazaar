@@ -12,6 +12,16 @@ void loginMenu()
     write(1, "3.) Exit application\n", sizeof("3.) Exit application\n"));
 }
 
+int authMenu()
+{
+    int id;
+    write(1, "----------------Auth Menu----------------\n", sizeof("----------------Auth Menu----------------\n"));
+    write(1, "Id: ", sizeof("Id: "));
+    scanf("%d", &id);
+    write(1, "Password: ", sizeof("Password: "));
+    return(id);
+}
+
 void customerMenu()
 {
     write(1, "1.) List all products\n", sizeof("1.) List all products\n"));

@@ -31,6 +31,7 @@ int main()
     strcpy(prod_ref.name, "==");
     prod_ref.price = -1;
     prod_ref.quantity = -1;
+    int is_auth = 1;
 
     int userType = -1;
     while (userType <= 0)
@@ -41,7 +42,27 @@ int main()
         if (userType == 1)
         {
             // Customer
-            while (1)
+            int id = authMenu();
+            char psswd[15];
+            scanf("%s", psswd);
+
+            write(sckfd, &userType, sizeof(userType));
+            write(sckfd, &id, sizeof(id));
+            write(sckfd, psswd, sizeof(psswd));
+
+            int auth_res = -1;
+            read(sckfd, &auth_res, sizeof(auth_res));
+            if(auth_res != 0){
+                is_auth = 0;
+                write(1, "Authentication unsuccessful!\n", sizeof("Authentication unsuccessful!\n"));
+            }
+            else{
+                is_auth = 1;
+                write(1, "Authentication successful!\n", sizeof("Authentication successful!\n"));
+            }
+
+
+            while (is_auth)
             {
                 write(sckfd, &userType, sizeof(userType));
                 int option;
@@ -61,7 +82,7 @@ int main()
                     Product product_array[MAX_CART_SIZE];
 
                     // ! TODO: set user id.
-                    Query q = {option, 1, prod_ref};
+                    Query q = {option, id, prod_ref};
                     write(sckfd, &q, sizeof(Query));
                     read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
                     listCart(product_array);
@@ -78,7 +99,7 @@ int main()
                     p.price = -1;
 
                     // ! TODO: set user id.
-                    Query q = {3, 1, p};
+                    Query q = {3, id, p};
                     write(sckfd, &q, sizeof(Query));
 
                     Product res;
@@ -107,7 +128,7 @@ int main()
                     strcpy(p.name, "==");
 
                     // ! TODO: set user id.
-                    Query q = {4, 1, p};
+                    Query q = {4, id, p};
                     write(sckfd, &q, sizeof(Query));
 
                     Product res;
@@ -136,7 +157,7 @@ int main()
                     write(1, "Products in cart available in sufficient quantity are:\n", sizeof("Products in cart available in sufficient quantity are:\n"));
                     Product product_array[MAX_CART_SIZE];
 
-                    Query q = {option, 1, prod_ref};
+                    Query q = {option, id, prod_ref};
                     write(sckfd, &q, sizeof(Query));
 
                     read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
@@ -178,7 +199,7 @@ int main()
                 }
                 else if (option == 6) // Exit
                 {
-                    Query q = {-1, -1, prod_ref};
+                    Query q = {6, -1, prod_ref};
                     write(sckfd, &q, sizeof(Query));
                     userType = -1;
                     break;

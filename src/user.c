@@ -5,10 +5,9 @@
 #include "./../header/User.h"
 #include "./../header/Admin.h"
 
-// TODO
 Customer getCustomer(int ID)
 {
-	int i = ID;
+	int i = ID - 1;
 	Customer c;
 	int fd = open(CUSTOMER_FILE, O_RDONLY);
 	int l1;
