@@ -1,0 +1,38 @@
+Log generated at: 2023-05-10 11:51:36
+------------------------------------------------------
+| ProductId		ProductName		 Cost		QuantityAvailable |
+|         1		      first		  200		               41 |
+|         5		      fifth		  150		               95 |
+|        10		      tenth		  100		                7 |
+|        13		  one-three		  131		               45 |
+|        20		  twentieth		  441		              118 |
+|        21		    two-one		  441		               47 |
+|        24		   two-four		  576		               28 |
+------------------------------------------------------
+Log generated at: 2023-05-10 12:04:04
+------------------------------------------------------
+| ProductId		ProductName		 Cost		QuantityAvailable |
+|         1		      PEPSI		   15		              100 |
+|         2		     TOMATO		  100		               10 |
+|         3		   SNICKERS		   35		               50 |
+|        10		     IPHONE		  400		               30 |
+------------------------------------------------------
+Log generated at: 2023-05-10 12:18:17
+--------------------------------------------------------------
+| ProductId		ProductName		 Cost		QuantityAvailable |
+|         1		      PEPSI		   15		              100 |
+|         2		     TOMATO		  100		               10 |
+|         3		   SNICKERS		   35		               50 |
+|         5		  CHOCOLATE		   10		              100 |
+|        10		     IPHONE		  400		               30 |
+--------------------------------------------------------------
+Log generated at: 2023-05-10 12:25:22
+--------------------------------------------------------------
+| ProductId		ProductName		 Cost		QuantityAvailable |
+|         1		      PEPSI		   15		              100 |
+|         2		     TOMATO		  100		               10 |
+|         3		   SNICKERS		   35		               50 |
+|         5		  CHOCOLATE		   10		              100 |
+|         7		      LIMCA		   12		              125 |
+|        10		     IPHONE		  400		               30 |
+--------------------------------------------------------------

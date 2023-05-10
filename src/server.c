@@ -24,62 +24,70 @@ void server(int nsd)
 	{
 		int is_auth = -1;
 		read(nsd, &type, sizeof(type));
-		read(nsd, &currUserID, sizeof(currUserID));
-		read(nsd, psswd, sizeof(psswd));
 
-		Customer tmp_customer = getCustomer(currUserID);
-		printf("f: %s\ne: %s\n", tmp_customer.password, psswd);
-		if(strcmp(tmp_customer.password, psswd) == 0){
-			is_auth = 0;
-		}
-		write(nsd, &is_auth, sizeof(is_auth));
-
-		while (type == 1)
+		if (type == 1)
 		{
-			read(nsd, &type, sizeof(type));
-			printf("...customer...\n");
-			read(nsd, &q, sizeof(Query));
-			if (q.query_num == 1)
+			read(nsd, &currUserID, sizeof(currUserID));
+			read(nsd, psswd, sizeof(psswd));
+
+			Customer tmp_customer = getCustomer(currUserID);
+			printf("f: %s\ne: %s\n", tmp_customer.password, psswd);
+			if (strcmp(tmp_customer.password, psswd) == 0)
 			{
-				printf("in 1,1\n");
-				Product *p_arr = malloc(sizeof(Product) * MAX_PRODUCTS);
-				p_arr = getAllProducts(p_arr);
-				write(nsd, p_arr, sizeof(Product) * MAX_PRODUCTS);
+				is_auth = 0;
 			}
-			else if (q.query_num == 2)
+			write(nsd, &is_auth, sizeof(is_auth));
+
+			while (type == 1)
 			{
-				printf("in 1,2\n");
-				Product *p_arr = malloc(sizeof(Product) * MAX_CART_SIZE);
-				p_arr = getCartByCustomer(q.user_id, p_arr);
-				write(nsd, p_arr, sizeof(Product) * MAX_CART_SIZE);
-			}
-			else if (q.query_num == 3)
-			{
-				printf("in 1,3\n");
-				Product p;
-				p = addProductToCart(q.product, q.user_id);
-				write(nsd, &p, sizeof(Product));
-			}
-			else if (q.query_num == 4)
-			{
-				printf("in 1,4\n");
-				Product p;
-				p = updateProductInCart(q.product, q.user_id);
-				write(nsd, &p, sizeof(Product));
-			}
-			else if (q.query_num == 5)
-			{
-				printf("in 1,5\n");
-				payment(nsd, q);
-			}
-			else if (q.query_num == 6)
-			{
-				write(1, "Logout...\n", sizeof("Logout...\n"));
-				break;
+				read(nsd, &type, sizeof(type));
+				printf("...customer...\n");
+				read(nsd, &q, sizeof(Query));
+				if (q.query_num == 1)
+				{
+					printf("in 1,1\n");
+					Product *p_arr = malloc(sizeof(Product) * MAX_PRODUCTS);
+					p_arr = getAllProducts(p_arr);
+					write(nsd, p_arr, sizeof(Product) * MAX_PRODUCTS);
+				}
+				else if (q.query_num == 2)
+				{
+					printf("in 1,2\n");
+					Product *p_arr = malloc(sizeof(Product) * MAX_CART_SIZE);
+					p_arr = getCartByCustomer(q.user_id, p_arr);
+					write(nsd, p_arr, sizeof(Product) * MAX_CART_SIZE);
+				}
+				else if (q.query_num == 3)
+				{
+					printf("in 1,3\n");
+					Product p;
+					p = addProductToCart(q.product, q.user_id);
+					write(nsd, &p, sizeof(Product));
+				}
+				else if (q.query_num == 4)
+				{
+					printf("in 1,4\n");
+					Product p;
+					p = updateProductInCart(q.product, q.user_id);
+					write(nsd, &p, sizeof(Product));
+				}
+				else if (q.query_num == 5)
+				{
+					printf("in 1,5\n");
+					payment(nsd, q);
+				}
+				else if (q.query_num == 6)
+				{
+					write(1, "Logout...\n", sizeof("Logout...\n"));
+					is_auth = 0;
+					break;
+				}
 			}
 		}
+
 		while (type == 2) // Admin
 		{
+			read(nsd, &type, sizeof(type));
 			printf("...admin...\n");
 			read(nsd, &q, sizeof(Query));
 
@@ -109,6 +117,7 @@ void server(int nsd)
 				printf("in 2,4\n");
 				generateLog();
 				write(nsd, "Generated Log\n", sizeof("Generated Log\n"));
+				break;
 			}
 		}
 	}

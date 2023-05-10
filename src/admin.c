@@ -4,10 +4,9 @@
 
 #include "./../header/Admin.h"
 
-// TODO
 Admin getAdmin(int ID)
 {
-	int i = ID;
+	int i = ID - 1;
 	Admin c;
 	int fd = open(ADMIN_FILE, O_RDONLY);
 
@@ -28,43 +27,6 @@ Admin getAdmin(int ID)
 	return c;
 }
 
-// TODO
-Customer addCustomer(Customer u)
-{
-	int fd = open(CUSTOMER_FILE, O_RDWR);
-	bool res;
-
-	int fl1;
-	struct flock lock;
-	lock.l_type = F_WRLCK;
-	lock.l_whence = SEEK_END;
-	lock.l_start = (-1) * sizeof(Customer);
-	lock.l_len = sizeof(Customer);
-	lock.l_pid = getpid();
-
-	fl1 = fcntl(fd, F_SETLKW, &lock);
-
-	// Read the last customer data entry.
-	Customer t;
-	lseek(fd, (-1) * sizeof(Customer), SEEK_END);
-	read(fd, &t, sizeof(Customer));
-
-	u.id = t.id + 1;
-	strcpy(u.details, "ACTIVE");
-
-	int j = write(fd, &u, sizeof(Customer));
-	if (j != 0)
-		res = true;
-	else
-		res = false;
-
-	lock.l_type = F_UNLCK;
-	fcntl(fd, F_SETLK, &lock);
-
-	close(fd);
-	// return res;
-}
-
 // No locking required.
 Product addProduct(Product p)
 {
@@ -73,26 +35,12 @@ Product addProduct(Product p)
 	bool res;
 	res = false;
 
-	// int fl1;
-	// struct flock lock;
-	// lock.l_type = F_WRLCK;
-	// lock.l_whence = SEEK_SET;
-	// lock.l_start = (p.id - 1) * sizeof(Product);
-	// lock.l_len = sizeof(Product);
-	// lock.l_pid = getpid();
-
-	// fl1 = fcntl(fd, F_SETLKW, &lock);
-
 	Product t;
 	lseek(fd, (p.id - 1) * sizeof(Product), SEEK_SET);
 	read(fd, &t, sizeof(Product));
 
 	if (p.id == t.id && t.quantity >= 0)
 	{
-		// Product already exists.
-		// lock.l_type = F_UNLCK;
-		// fcntl(fd, F_SETLK, &lock);
-
 		close(fd);
 		p.id = -1;
 		return (p);
@@ -110,9 +58,6 @@ Product addProduct(Product p)
 	{
 		res = false;
 	}
-
-	// lock.l_type = F_UNLCK;
-	// fcntl(fd, F_SETLK, &lock);
 
 	close(fd);
 	if (res)
@@ -247,7 +192,6 @@ Product modifyProduct(Product n)
 // Generate Log.
 int generateLog()
 {
-	// strcat(ADMIN_LOG_FILE, ".txt");
 	int fd = open(ADMIN_LOG_FILE, O_WRONLY | O_CREAT | O_APPEND, 0777);
 	lseek(fd, 0, SEEK_END);
 
@@ -262,7 +206,7 @@ int generateLog()
 	product_array = getAllProducts(product_array);
 
 	write(fd, buf, k);
-	k = sprintf(buf, "------------------------------------------------------\n");
+	k = sprintf(buf, "--------------------------------------------------------------\n");
 	write(fd, buf, k);
     k = sprintf(buf, "| ProductId\t\tProductName\t\t Cost\t\tQuantityAvailable |\n");
 	write(fd, buf, k);
@@ -274,8 +218,47 @@ int generateLog()
 			write(fd, buf1, k);
 		}
     }
-	k = sprintf(buf, "------------------------------------------------------\n");
+	k = sprintf(buf, "--------------------------------------------------------------\n");
 	write(fd, buf, k);
 	close(fd);
 	return (0);
 }
+
+// Additional code for extensibility.
+/*
+// Customer addCustomer(Customer u)
+// {
+// 	int fd = open(CUSTOMER_FILE, O_RDWR);
+// 	bool res;
+
+// 	int fl1;
+// 	struct flock lock;
+// 	lock.l_type = F_WRLCK;
+// 	lock.l_whence = SEEK_END;
+// 	lock.l_start = (-1) * sizeof(Customer);
+// 	lock.l_len = sizeof(Customer);
+// 	lock.l_pid = getpid();
+
+// 	fl1 = fcntl(fd, F_SETLKW, &lock);
+
+// 	// Read the last customer data entry.
+// 	Customer t;
+// 	lseek(fd, (-1) * sizeof(Customer), SEEK_END);
+// 	read(fd, &t, sizeof(Customer));
+
+// 	u.id = t.id + 1;
+// 	strcpy(u.details, "ACTIVE");
+
+// 	int j = write(fd, &u, sizeof(Customer));
+// 	if (j != 0)
+// 		res = true;
+// 	else
+// 		res = false;
+
+// 	lock.l_type = F_UNLCK;
+// 	fcntl(fd, F_SETLK, &lock);
+
+// 	close(fd);
+// 	// return res;
+// }
+*/

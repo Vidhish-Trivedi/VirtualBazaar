@@ -5,6 +5,7 @@
 #include "./../header/User.h"
 #include "./../header/Admin.h"
 
+// Advisory Locking (Read Lock).
 Customer getCustomer(int ID)
 {
 	int i = ID - 1;
@@ -27,6 +28,7 @@ Customer getCustomer(int ID)
 	return c;
 }
 
+// Advisory Locking (Write Lock).
 Product addProductToCart(Product product, int ID)
 {
 	int i = ID;
@@ -190,6 +192,7 @@ Product *getAllProducts(Product p_arr[])
 	return (p_arr);
 }
 
+// Advisory Locking (Read Lock).
 Product *getCartByCustomer(int ID, Product p_arr[])
 {
 	int i = ID;
@@ -201,7 +204,7 @@ Product *getCartByCustomer(int ID, Product p_arr[])
 	fd = open(CUSTOMER_FILE, O_RDWR);
 
 	struct flock lock;
-	lock.l_type = F_WRLCK;
+	lock.l_type = F_RDLCK;
 	lock.l_whence = SEEK_SET;
 	lock.l_start = (i - 1) * sizeof(Customer);
 	lock.l_len = sizeof(Customer);
@@ -227,6 +230,7 @@ Product *getCartByCustomer(int ID, Product p_arr[])
 	return (p_arr);
 }
 
+// Advisory Locking (Write Lock).
 Product updateProductInCart(Product product, int ID)
 {
 	int i = ID - 1;
@@ -293,7 +297,7 @@ int generateReciept(Query q, int total, Product p_arr[])
 	int k = sprintf(file_name, "/home/vidhish/Desktop/os-project/Online-Retail-Store/logs/receipts/%d-%02d-%02d_%02d-%02d-%02d.txt", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 	int fd = open(file_name, O_WRONLY | O_CREAT | O_APPEND, 0777);
 	lseek(fd, 0, SEEK_END);
-	
+
 	printf("Reciept generated at: %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 	char buf[200];
 	char buf1[500];
@@ -302,16 +306,16 @@ int generateReciept(Query q, int total, Product p_arr[])
 	write(fd, buf, k);
 	k = sprintf(buf, "------------------------------------------------------\n");
 	write(fd, buf, k);
-    k = sprintf(buf, "| ProductId\t\tProductName\t\t Cost\t\tQuantity |\n");
+	k = sprintf(buf, "| ProductId\t\tProductName\t\t Cost\t\tQuantity |\n");
 	write(fd, buf, k);
-    for (int idx = 0; idx < MAX_PRODUCTS; idx++)
-    {
-        if (p_arr[idx].id > 0 && p_arr[idx].id < MAX_PRODUCTS + 1 && p_arr[idx].quantity > 0)
-        {
-            k = sprintf(buf1, "| %9d\t\t%11s\t\t%5d\t\t%8d |\n", p_arr[idx].id, p_arr[idx].name, p_arr[idx].price, p_arr[idx].quantity); // For formatting.
+	for (int idx = 0; idx < MAX_PRODUCTS; idx++)
+	{
+		if (p_arr[idx].id > 0 && p_arr[idx].id < MAX_PRODUCTS + 1 && p_arr[idx].quantity > 0)
+		{
+			k = sprintf(buf1, "| %9d\t\t%11s\t\t%5d\t\t%8d |\n", p_arr[idx].id, p_arr[idx].name, p_arr[idx].price, p_arr[idx].quantity); // For formatting.
 			write(fd, buf1, k);
 		}
-    }
+	}
 	k = sprintf(buf, "------------------------------------------------------\n");
 	write(fd, buf, k);
 	k = sprintf(buf, "Total Cost: %d\n", total);

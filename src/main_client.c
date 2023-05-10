@@ -38,6 +38,7 @@ int main()
     {
         loginMenu();
         scanf("%d", &userType);
+        write(sckfd, &userType, sizeof(userType));
 
         if (userType == 1)
         {
@@ -46,7 +47,6 @@ int main()
             char psswd[15];
             scanf("%s", psswd);
 
-            write(sckfd, &userType, sizeof(userType));
             write(sckfd, &id, sizeof(id));
             write(sckfd, psswd, sizeof(psswd));
 
@@ -81,7 +81,6 @@ int main()
                 {
                     Product product_array[MAX_CART_SIZE];
 
-                    // ! TODO: set user id.
                     Query q = {option, id, prod_ref};
                     write(sckfd, &q, sizeof(Query));
                     read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
@@ -98,7 +97,6 @@ int main()
                     strcpy(p.name, "==");
                     p.price = -1;
 
-                    // ! TODO: set user id.
                     Query q = {3, id, p};
                     write(sckfd, &q, sizeof(Query));
 
@@ -127,7 +125,6 @@ int main()
                     p.price = -1;
                     strcpy(p.name, "==");
 
-                    // ! TODO: set user id.
                     Query q = {4, id, p};
                     write(sckfd, &q, sizeof(Query));
 
@@ -153,7 +150,6 @@ int main()
                     // Unlock PRODUCT_FILE.
                     // Generate receipt.
 
-                    // ! TODO: set user id.
                     write(1, "Products in cart available in sufficient quantity are:\n", sizeof("Products in cart available in sufficient quantity are:\n"));
                     Product product_array[MAX_CART_SIZE];
 
@@ -199,14 +195,14 @@ int main()
                 }
                 else if (option == 6) // Exit
                 {
-                    Query q = {6, -1, prod_ref};
+                    Query q = {6, id, prod_ref};
                     write(sckfd, &q, sizeof(Query));
                     userType = -1;
                     break;
                 }
                 else
                 {
-                    Query q = {-1, -1, prod_ref};
+                    Query q = {-1, id, prod_ref};
                     write(sckfd, &q, sizeof(Query));
                     write(1, "Invalid Choice... Try again!\n", sizeof("Invalid Choice... Try again!\n"));
                 }
