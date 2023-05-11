@@ -95,6 +95,8 @@ target/client_exe
 
 - **File Handling**: For reading from data files and writing to data files. This makes use of read() and write() system calls and allows us to persistently store data.
 
+- **Semaphore**: A semaphore has been used to implement a lock on the payment gateway. The server allows only one customer to enter the payment gateway using binary semaphore.
+
 ## Authors
 
 - [@Vidhish-Trivedi](https://github.com/Vidhish-Trivedi)
