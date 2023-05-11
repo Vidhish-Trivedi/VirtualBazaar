@@ -74,7 +74,23 @@ void server(int nsd)
 				else if (q.query_num == 5)
 				{
 					printf("in 1,5\n");
+					union semun arg;
+					key_t key = ftok(".", 'a');
+					int semid = semget(key, 1, 0);
+					struct sembuf buf = {0, -1, SEM_UNDO};
+					int retval = semop(semid, &buf, 1);
+					if (retval == -1)
+					{
+						printf("Error in getting the semaphore\n");
+					}
+					else
+					{
+						printf("Have the semaphore\n");
+					}
 					payment(nsd, q);
+					buf.sem_op = 1;
+					semop(semid, &buf, 1);
+					printf("Semaphore released\n");
 				}
 				else if (q.query_num == 6)
 				{

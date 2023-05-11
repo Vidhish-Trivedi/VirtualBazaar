@@ -1,0 +1,7 @@
+Receipt generated at: 2023-05-11 12:24:57
+------------------------------------------------------
+| ProductId		ProductName		 Cost		Quantity |
+|         3		   SNICKERS		   35		       4 |
+|         7		      LIMCA		   12		       5 |
+------------------------------------------------------
+Total Cost: 200
