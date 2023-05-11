@@ -42,8 +42,8 @@ target/client_exe
     - Admin (This is a single-admin application)
     - Customer
 - Once the user makes a valid choice, they are asked to login using their credentials:
-    - Id and password for customers.
-    - Name and Password for admin.
+    - Id and password for customers (default Ids: 1 to 25, default password: pass).
+    - Id and Password for admin (default Id: 1, default password: admin_pass).
 - On successful login, a menu is displayed as per the type of user which has logged in 
 
 ### Admin
