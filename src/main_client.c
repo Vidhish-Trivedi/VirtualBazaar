@@ -52,15 +52,16 @@ int main()
 
             int auth_res = -1;
             read(sckfd, &auth_res, sizeof(auth_res));
-            if(auth_res != 0){
+            if (auth_res != 0)
+            {
                 is_auth = 0;
                 write(1, "Authentication unsuccessful!\n", sizeof("Authentication unsuccessful!\n"));
             }
-            else{
+            else
+            {
                 is_auth = 1;
                 write(1, "Authentication successful!\n", sizeof("Authentication successful!\n"));
             }
-
 
             while (is_auth)
             {
@@ -157,15 +158,14 @@ int main()
                     write(sckfd, &q, sizeof(Query));
 
                     read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
-                    
+
                     listCart(product_array);
 
                     write(1, "\tPrices may vary from the time you added a product to your cart.\n", sizeof("\tPrices may vary from the time you added a product to your cart.\n"));
                     write(1, "\nOther products in cart which are not available in sufficient quantity:\n", sizeof("\nOther products in cart which are not available in sufficient quantity:\n"));
 
-                    
                     read(sckfd, product_array, sizeof(Product) * MAX_CART_SIZE);
-                    
+
                     listCart(product_array);
 
                     int cnt_available = 0;
@@ -211,7 +211,27 @@ int main()
         else if (userType == 2)
         {
             // Admin
-            while (1)
+            int id = authMenu();
+            char psswd[15];
+            scanf("%s", psswd);
+
+            write(sckfd, &id, sizeof(id));
+            write(sckfd, psswd, sizeof(psswd));
+
+            int auth_res = -1;
+            read(sckfd, &auth_res, sizeof(auth_res));
+            if (auth_res != 0)
+            {
+                is_auth = 0;
+                write(1, "Authentication unsuccessful!\n", sizeof("Authentication unsuccessful!\n"));
+            }
+            else
+            {
+                is_auth = 1;
+                write(1, "Authentication successful!\n", sizeof("Authentication successful!\n"));
+            }
+
+            while (is_auth)
             {
                 write(sckfd, &userType, sizeof(userType));
 

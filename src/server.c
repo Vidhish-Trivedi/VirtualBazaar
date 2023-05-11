@@ -38,7 +38,7 @@ void server(int nsd)
 			}
 			write(nsd, &is_auth, sizeof(is_auth));
 
-			while (type == 1)
+			while (type == 1 && !is_auth)
 			{
 				read(nsd, &type, sizeof(type));
 				printf("...customer...\n");
@@ -101,39 +101,52 @@ void server(int nsd)
 			}
 		}
 
-		while (type == 2) // Admin
+		if (type == 2)
 		{
-			read(nsd, &type, sizeof(type));
-			printf("...admin...\n");
-			read(nsd, &q, sizeof(Query));
+			read(nsd, &currUserID, sizeof(currUserID));
+			read(nsd, psswd, sizeof(psswd));
 
-			if (q.query_num == 1) // Add
+			Admin tmp_admin = getAdmin(currUserID);
+			if (strcmp(tmp_admin.password, psswd) == 0)
 			{
-				printf("in 2,1\n");
-				Product result;
-				result = addProduct(q.product);
-				write(nsd, &result, sizeof(Product));
+				is_auth = 0;
 			}
-			else if (q.query_num == 2) // Delete
+			write(nsd, &is_auth, sizeof(is_auth));
+
+			while (type == 2 && !is_auth) // Admin
 			{
-				printf("in 2,2\n");
-				Product p;
-				p = deleteProduct(q.product.id);
-				write(nsd, &p, sizeof(Product));
-			}
-			else if (q.query_num == 3) // Update
-			{
-				printf("in 2,3\n");
-				Product p;
-				p = modifyProduct(q.product);
-				write(nsd, &p, sizeof(Product));
-			}
-			else if (q.query_num == 4)
-			{
-				printf("in 2,4\n");
-				generateLog();
-				write(nsd, "Generated Log\n", sizeof("Generated Log\n"));
-				break;
+				read(nsd, &type, sizeof(type));
+				printf("...admin...\n");
+				read(nsd, &q, sizeof(Query));
+
+				if (q.query_num == 1) // Add
+				{
+					printf("in 2,1\n");
+					Product result;
+					result = addProduct(q.product);
+					write(nsd, &result, sizeof(Product));
+				}
+				else if (q.query_num == 2) // Delete
+				{
+					printf("in 2,2\n");
+					Product p;
+					p = deleteProduct(q.product.id);
+					write(nsd, &p, sizeof(Product));
+				}
+				else if (q.query_num == 3) // Update
+				{
+					printf("in 2,3\n");
+					Product p;
+					p = modifyProduct(q.product);
+					write(nsd, &p, sizeof(Product));
+				}
+				else if (q.query_num == 4)
+				{
+					printf("in 2,4\n");
+					generateLog();
+					write(nsd, "Generated Log\n", sizeof("Generated Log\n"));
+					break;
+				}
 			}
 		}
 	}
