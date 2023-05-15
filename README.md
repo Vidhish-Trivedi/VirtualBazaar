@@ -27,6 +27,14 @@ target/dataWriter
 make target/server_exe
 make target/client_exe
 ```
+
+- Alternatively, instead of setting up the directories manually, you can use the included `install.sh` script:
+
+```bash
+sudo chmod 777 install.sh
+./install
+```
+
 - To run the server-side program, run the following:
 ```bash
 target/server_exe
