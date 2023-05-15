@@ -1,6 +1,6 @@
-Receipt generated at: 2023-05-11 12:25:22
+Receipt generated at: 2023-05-15 00:08:15
 ------------------------------------------------------
 | ProductId		ProductName		 Cost		Quantity |
-|         5		  CHOCOLATE		   10		       2 |
+|         1		      PEPSI		   10		       2 |
 ------------------------------------------------------
 Total Cost: 20

@@ -1,6 +1,6 @@
-Receipt generated at: 2023-05-11 17:43:52
+Receipt generated at: 2023-05-15 00:07:44
 ------------------------------------------------------
 | ProductId		ProductName		 Cost		Quantity |
-|        10		     IPHONE		  400		       3 |
+|         2		    MIRANDA		   10		       6 |
 ------------------------------------------------------
-Total Cost: 1200
+Total Cost: 72
