@@ -1,6 +1,7 @@
 # Online Retail Store
 
 - This project was made as part of the course: Operating Systems - Lab (EG301P), at IIIT-Bangalore.
+- Please read the included Project_Report.pdf 
 - This is a client-server application that allows users to browse and purchase products online. The system has features such as customer authentication, product browsing, adding products to cart, checkout and order placement.
 - The server-side of the application is responsible for handling client requests, managing product and user data, and processing orders.
 - The client-side of the application provides a user-friendly interface for users (customers) and admins to interact with the system using the terminal.
