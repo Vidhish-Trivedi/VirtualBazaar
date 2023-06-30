@@ -1,3 +1,6 @@
 *.out
 .vscode/
 *.o
+target/
+data/
+logs/
