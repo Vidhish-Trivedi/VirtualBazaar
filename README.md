@@ -1,4 +1,4 @@
-# Online Retail Store
+# VirtualBazaar
 
 - This project was made as part of the course: Operating Systems - Lab (EG301P), at IIIT-Bangalore.
 - Please read the included Project_Report.pdf 
